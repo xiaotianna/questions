@@ -198,7 +198,9 @@ const { clear } = MySetInterval(() => {
 
 ## 问题 6：发布订阅模式
 
-```js
+::: code-group
+
+```js [class]
 class EventEmitter {
   constructor() {
     this.emit = {}
@@ -253,6 +255,46 @@ emitter.off('message')
 // 再次发布事件，此时回调函数不会被执行
 emitter.emits('message', '再见，世界！')
 ```
+
+```js [es5]
+const emitter = (function () {
+  var deps = {}
+  return {
+    on: function (type, cb) {
+      deps[type] = deps[type] || []
+      deps[type].push(cb)
+    },
+    emit: function (type, ...rest) {
+      deps[type] instanceof Array &&
+        deps[type].forEach((cb) => cb.apply(null, rest))
+    },
+    off: function (type, cb) {
+      if (!deps[type]) return
+      let index = deps[type].findIndex((item) => item === cb)
+      if (index !== -1) {
+        deps[type].splice(index, 1)
+      }
+    }
+  }
+})()
+
+const handle1 = (data) => {
+  console.log('test 1', data)
+}
+emitter.on('test', handle1)
+
+emitter.on('test', (data) => {
+  console.log('test 2', data)
+})
+
+setTimeout(() => {
+  emitter.emit('test', 'hello world')
+  emitter.off('test', handle1) // 取消订阅
+  emitter.emit('test', 'hello world') // 当 off 了handle1 后，handle1 不会再执行了
+}, 1000)
+```
+
+:::
 
 ## 问题 7：手写 节流、防抖、深浅拷贝、call、apply、bind、promise
 
