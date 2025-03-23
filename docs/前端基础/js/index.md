@@ -1000,7 +1000,7 @@ const calculator = new Calculator(10)
   .multiply(3)
   .divide(4)
   .getValue()
-console.log(calculator) // 输出 2.25
+console.log(calculator) // 输出 9.75
 ```
 
 ### Proxy 实现
