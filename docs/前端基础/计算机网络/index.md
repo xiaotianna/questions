@@ -286,6 +286,7 @@ Cookie（HTTP Cookie）和 Session（会话）都是用于在 Web 应用程序�
 - **DOM 访问限制**：不同源的网页不能直接访问彼此的 DOM 元素，包括读取和修改。这意味着一个网页无法通过 JavaScript 获取另一个网页的内容，除非目标网页明确授权。
 - **Cookie 限制**：同源策略阻止网页访问不属于自己源的 Cookie。Cookie 是用于在客户端存储和传输信息的机制，同源策略确保 Cookie 只能由创建它的源访问。
 - **XMLHttpRequest 限制**：XMLHttpRequest（XHR）是用于在网页和服务器之间进行异步数据交换的技术。同源策略禁止不同源的网页通过 XHR 请求发送或接收数据。
+- **IndexedDB**：IndexedDB 遵循同源策略。但是可以通过 iframe 来进行数据传递。
 - **跨文档消息限制**：同源策略限制不同源的窗口或帧之间通过 postMessage()方法进行通信。这可以防止恶意网页滥用通信渠道。
 - **脚本限制**：不同源的脚本文件（如 JavaScript）不能相互引用和执行。
 
