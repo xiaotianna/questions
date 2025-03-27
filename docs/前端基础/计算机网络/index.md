@@ -166,7 +166,7 @@ HTTPS 增加的 TLS/SSL 层可以**对身份进行验证、信息加密解密**�
 ## 面试题 11：Http1 和 Http2 的区别？
 
 - **二进制协议**：HTTP1.1 的解析是基于文本，而 HTTP2 使用二进制，将请求和响应分割为更小的帧，从而实现多路复用。
-- **多路复用**：在一个连接里，客户端和服务器都可以同时发送多个请求或回应，而且不用按照顺序一一发送，这样避免了 HTTP 队头阻塞，但是 TCP 的队头阻塞依旧存在。
+- **多路复用**：HTTP/2 允许在单个连接上同时发送多个请求和响应，而不需要等待一个请求的响应才能发送下一个请求。这样避免了 HTTP 队头阻塞，但是 TCP 的队头阻塞依旧存在。
 
   - HTTP 队头阻塞
 
@@ -276,8 +276,7 @@ Cookie（HTTP Cookie）和 Session（会话）都是用于在 Web 应用程序�
 
 **解决方法：**
 
-- CORS：服务器开启跨域资源共享
-- JSONP：利用`<script>`标签不存在跨域限制，只支持 GET 请求，且不安全。
+- CORS：服务器开启跨域资源共享，可以允许指定源（域名、协议、端口）的请求 `Access-Control-Allow-Origin`。 
 - nginx 代理跨域
 - nodejs 中间件代理跨域，通过 node 开启一个代理服务器。
 
@@ -306,3 +305,38 @@ Cookie（HTTP Cookie）和 Session（会话）都是用于在 Web 应用程序�
 3. **程序错误或重复调用**：在你的 JavaScript 代码中，有时会发生意外的重复调用 Fetch API 的情况，例如在某个事件处理程序中多次触发 Fetch 请求。这将导致多个请求被发送。
 4. **浏览器预加载和预解析**：现代浏览器可能会在背后执行一些资源的预加载和预解析操作，以提高性能。这可能导致浏览器发送额外的请求。这些请求通常不会在开发者控制范围之内。
 5. **浏览器插件或扩展**：有时，浏览器插件或扩展可能会触发 Fetch 请求。这可能会导致你看到不同于你的网站代码所发出的请求。
+
+## 面试题 18：websocket
+
+WebSocket是在应用层实现的协议。尽管WebSocket的握手过程使用了HTTP协议，但一旦握手成功，WebSocket连接会升级为全双工的通信通道，不再遵循HTTP协议的规则。在握手成功后，WebSocket协议会在应用层上定义消息格式和通信规则，通过TCP协议在传输层上进行数据传输，使得客户端和服务器可以通过发送和接收WebSocket消息来进行实时的双向通信。 
+
+支持传输数据的格式：
+
+- 文本数据
+- 二进制数据
+
+## 面试题 19：websocket 建立连接的过程
+
+1. **客户端发起HTTP握手请求**：客户端首先向服务器发起一个标准的HTTP请求，这个请求包含了一些特定的头部，用于请求建立WebSocket连接。
+
+```http
+GET /chat HTTP/1.1 # 请求的路径和协议版本。
+Host: server.example.com # 服务器的主机名。
+Upgrade: websocket # 表示请求协议升级到WebSocket。
+Connection: Upgrade # 表示希望升级连接。
+Sec-WebSocket-Key: dGhLIHNvbXBsZSBuY2jZQ== # Base64编码的随机密钥，服务器用于生成响应中的`Sec-WebSocket-Accept`。
+Sec-WebSocket-Version: 13 # WebSocket协议版本，当前版本是13。 
+```
+
+2. **服务器响应HTTP握手请求**：如果服务器支持WebSocket并同意升级连接，则会返回一个101 Switching Protocols状态码的响应，表示协议切换成功。
+
+```http
+HTTP/1.1 101 Switching Protocols # 状态码表示协议切换。
+Upgrade: websocket # 确认升级到WebSocket协议。
+Connection: Upgrade # 确认连接升级。
+Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo= # 服务器基于客户端提供的`Sec-WebSocket-Key`计算得到值，保证握手安全。 
+```
+
+3. **WebSocket连接建立**：在服务器响应成功后，客户端和服务器之间的HTTP连接就升级为WebSocket连接，从此可以进行全双工的实时通信。此时，HTTP头部已经不再使用，取而代之的是WebSocket数据帧。
+
+4. **连接关闭**：WebSocket连接可以由客户端或服务器任意一方关闭。关闭连接时，发送一个控制帧表示关闭请求，连接将以有序的方式关闭。 
