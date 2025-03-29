@@ -31,6 +31,6 @@ features:
       link: /算法/数据结构/
     - title: Git
       link: /git/
+    - title: 面经
+      link: /面经/
 ---
-
-仓库地址：[https://github.com/xiaotianna/interview-questions](https://github.com/xiaotianna/interview-questions)

@@ -37,8 +37,9 @@ export const sidebar = {
       items: [
         { text: '模块化规范', link: '/前端工程化/模块化规范' },
         { text: 'peerDependencies', link: '/前端工程化/peerDependencies' },
-        { text: 'pnpm优势', link: '/前端工程化/pnpm优势' },
-        { text: 'minify代码压缩', link: '/前端工程化/minify代码压缩' }
+        { text: '包管理器', link: '/前端工程化/包管理器' },
+        { text: 'PostCss', link: '/前端工程化/postcss' },
+        { text: 'minify代码压缩', link: '/前端工程化/minify代码压缩' },
       ]
     },
     {

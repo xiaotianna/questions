@@ -10,7 +10,7 @@ Vite 的优化主要是围绕以下几个方面：
 - 资源压缩
   - 使用 `Terser` 或其他插件来压缩 JavaScript。
   - 使用 `html-minifier-terser` 或类似插件压缩 HTML。
-- 使用 `imagemin` 插件来压缩图像资源。
+  - 使用 `imagemin` 插件来压缩图像资源。
 - 缓存利用
   - Vite 内置的 HMR 和增量构建可以减少构建时间。
   - 使用 .vite 目录下的缓存文件来加速后续构建。
