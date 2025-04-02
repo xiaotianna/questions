@@ -179,7 +179,7 @@ HTTPS 增加的 <u style="background: pink;">TLS/SSL 层可以**对身份进行�
 ## 面试题 11：Http1 和 Http2 的区别？
 
 - **二进制协议**：HTTP1.1 的解析是基于文本，而 HTTP2 使用二进制，将请求和响应分割为更小的帧，从而实现多路复用。
-- **多路复用**：HTTP/2 允许在单个连接上同时发送多个请求和响应，而不需要等待一个请求的响应才能发送下一个请求。这样避免了 HTTP 队头阻塞，但是 TCP 的队头阻塞依旧存在。
+- **多路复用**：浏览器有个请求最大并发数，谷歌是 6 个，HTTP 1.1 中如果超过了这个数量，后序的请求需要进行排队，而 HTTP2 在一个 TCP 连接上可以同时并行发送多个请求和响应，这样避免了 HTTP 队头阻塞，但是 TCP 的队头阻塞依旧存在。
 
   - HTTP 队头阻塞
 
@@ -211,6 +211,18 @@ HTTPS 增加的 <u style="background: pink;">TLS/SSL 层可以**对身份进行�
 ## 面试题 12：Cookie 为了解决什么问题？
 
 Cookie 诞生的主要目的是<u>为了解决 HTTP 协议的无状态性问题</u>。HTTP 协议是一种无状态的协议，即服务器无法识别不同的用户或跟踪用户的状态。这导致了一些问题，比如无法保持用户的登录状态、无法跟踪用户的购物车内容等。
+
+### Cookie 常用字段
+
+- **Name**（名称）：Cookie的名称，用于标识特定的Cookie。每个Cookie都有一个唯一的名称，例如`username`、`session_id`等。通过名称，服务器和浏览器可以识别和操作特定的Cookie。
+- **Value**（值）：Cookie的值，是与名称相关联的数据。例如，`username` Cookie的值可能是用户的登录名，`session_id` Cookie的值可能是一个唯一的会话标识符。
+- **Domain**（域）：指定Cookie所属的域名。Cookie只能被发送到与该域名匹配的服务器上。例如，如果`Domain`设置为`example.com`，那么只有在访问`example.com`及其子域名（如`www.example.com`）时，浏览器才会发送该Cookie。
+- **Path**（路径）：指定Cookie适用的路径。只有当请求的URL路径与该路径匹配时，浏览器才会发送Cookie。例如，`Path`设置为`/admin`，那么只有在访问`example.com/admin`及其子路径下的页面时，才会发送该Cookie。
+- **Expires** / **Max-Age**：用于设置Cookie的过期时间。
+    - **Expires**：指定一个具体的日期和时间，当到达该时间后，Cookie将被删除。例如，`Expires=Wed, 31 Dec 2025 23:59:59 GMT`。
+    - **Max-Age**：指定从当前时间开始，Cookie有效的秒数。例如，`Max-Age=3600`表示Cookie将在1小时后过期。如果不设置这两个字段，Cookie通常在浏览器关闭时就会被删除。
+- **Secure**：该字段是一个布尔值，表示Cookie是否只能通过安全的HTTPS连接发送。如果设置了`Secure`，那么在HTTP连接下，浏览器不会发送该Cookie，以确保数据传输的安全性。
+- **HttpOnly**：也是一个布尔值，设置为`true`时，Cookie只能通过HTTP协议访问，无法通过客户端脚本（如JavaScript）访问。这有助于防止跨站点脚本攻击（XSS）窃取Cookie信息。
 
 ## 面试题 13：Cookie 和 Session 的区别？
 
@@ -289,7 +301,35 @@ Cookie（HTTP Cookie）和 Session（会话）都是用于在 Web 应用程序�
 
 **解决方法：**
 
-- CORS：服务器开启跨域资源共享，可以允许指定源（域名、协议、端口）的请求 `Access-Control-Allow-Origin`。 
+- CORS：服务器开启跨域资源共享，可以允许指定源（域名、协议、端口）的请求 `Access-Control-Allow-Origin`。
+
+::: tip cors
+
+浏览器会标识 `Origin` 字段，服务器允许跨域时，通常会在响应头中添加 `Access-Control-Allow-Origin` 字段。
+
+后端设置为：
+- `Access-Control-Allow-Origin: *`（它的值可以是具体的域名，表示仅允许该域名发起的跨域请求；也可以是*，表示允许任何源发起的跨域请求。）
+- 后端支持预检请求options：`Access-Control-Allow-Methods`、`Access-Control-Allow-Headers` 设置允许的请求方法和请求头。
+
+以express为例：
+
+```js
+// 处理 OPTIONS 请求
+app.options('*', (req, res) => {
+    // 设置允许的请求方法
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    // 设置允许的请求头
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    // 设置允许的源
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    // 设置预检请求的缓存时间
+    res.setHeader('Access-Control-Max-Age', '86400'); 
+    res.status(200).send();
+});
+```
+
+:::
+
 - nginx 代理跨域
 - nodejs 中间件代理跨域，通过 node 开启一个代理服务器。
 

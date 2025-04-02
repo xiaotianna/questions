@@ -14,7 +14,8 @@ export const sidebar = {
       items: [
         { text: '进程和线程', link: '/前端基础/浏览器相关/进程和线程' },
         { text: '事件循环', link: '/前端基础/浏览器相关/事件循环' },
-        { text: '浏览器渲染原理', link: '/前端基础/浏览器相关/浏览器渲染原理' }
+        { text: '浏览器渲染原理', link: '/前端基础/浏览器相关/浏览器渲染原理' },
+        { text: '浏览器垃圾回收', link: '/前端基础/浏览器相关/浏览器垃圾回收' },
       ]
     },
     {
@@ -26,7 +27,8 @@ export const sidebar = {
   ],
   '/vue/': [
     { text: '基础知识', link: '/vue/' },
-    { text: '原理篇', link: '/vue/原理篇' }
+    { text: '原理篇', link: '/vue/原理篇' },
+    { text: 'uniapp、小程序', link: '/vue/uniapp、小程序' },
   ],
   '/react/': [
     { text: '基础知识', link: '/react/' },
@@ -40,6 +42,7 @@ export const sidebar = {
         { text: '包管理器', link: '/前端工程化/包管理器' },
         { text: 'PostCss', link: '/前端工程化/postcss' },
         { text: 'minify代码压缩', link: '/前端工程化/minify代码压缩' },
+        { text: 'tree-shaking', link: '/前端工程化/tree-shaking' },
       ]
     },
     {
@@ -171,5 +174,15 @@ export const sidebar = {
         { text: 'git提交后 commitlint', link: '/git/git提交后' }
       ]
     }
+  ],
+  '/面经/': [
+    {
+      text: 'Tabz 腾讯WXG面经',
+      link: '/面经/',
+    },
+    {
+      text: 'wxg-企业微信部门面经',
+      link: '/面经/wxg-企业微信部门面经',
+    },
   ]
 }

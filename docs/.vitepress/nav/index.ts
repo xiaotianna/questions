@@ -13,12 +13,7 @@ export const nav = [
   { text: 'Git', link: '/git/', activeMatch: '/git/' },
   {
     text: '面经',
-    activeMatch: '/面经/',
-    items: [
-      {
-        text: 'Tabz 腾讯WXG面经',
-        link: '/面经/',
-      },
-    ]
+    link: '/面经/',
+    activeMatch: '/面经/'
   }
 ]

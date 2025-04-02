@@ -476,3 +476,87 @@ BFC：块级格式化上下文，就是一个独立的布局环境，BFC 里面�
   transform: scaleY(0.5); /* 使用scale缩放高度为0.5，模拟较细的线 */
 }
 ```
+
+## 问题 15：响应式窗口调整如何实现？
+
+- CSS Media 媒体查询
+- 弹性布局
+  - flex
+  - vw、vh
+  - em / rem
+- js 监听窗口大小
+  - resize 事件，结合防抖、节流去优化
+- tailwindcss
+  - sm
+  - md
+  - lg
+
+## 问题 16：动画的实现方式和区别？
+
+1. CSS 动画：采用 GPU 加速，性能好
+   - 使用 `transition` 属性实现**过渡**动画。
+   - 使用 `@keyframes` 规则定义动画，然后使用 `animation` 属性应用动画，可以设置不同时间点的样式。
+2. JS 动画：优点：更加灵活
+
+   - 使用 `requestAnimationFrame` 方法实现**帧动画**，一般用于连续的动画，例如：数字增长效果。
+
+   ```js
+   const box = document.querySelector('.box')
+   const animation = (time) => {
+     box.style.transform = `translateX(${Math.random() * 360}px)`
+     requestAnimationFrame(animation)
+   }
+   requestAnimationFrame(animation)
+   ```
+
+   - GSAP
+
+3. web 动画：
+
+   - 使用浏览器原生 `Web Animations API` 实现动画，优点：CSS 简单、JS 灵活。
+
+   ```js
+   const box = document.querySelector('.box')
+   const animation = box.animate(
+     [
+       {
+         transform: 'translateX(0)',
+         backgroundColor: 'blue'
+       },
+       {
+         transform: 'translateX(100px)',
+         backgroundColor: 'red'
+       }
+     ],
+     {
+       duration: 1000,
+       iterations: Infinity
+     }
+   )
+   ```
+
+## 问题 17：如何实现单行、多行省略号？
+
+**单行**：
+
+```css
+.box {
+  white-space: nowrap; /* 不换行 */
+  overflow: hidden; /* 超出容器的部分隐藏 */
+  text-overflow: ellipsis; /* 超出的部分用省略号表示 */
+}
+```
+
+**多行**：
+
+```css
+.box {
+  display: -webkit-box; /* 使用 Flexbox 布局 */
+  -webkit-box-orient: vertical; /* 设置盒子为垂直方向排列，必须要在 -webkit-box 下才能使用 */
+  -webkit-line-clamp: 2; /* 限制显示的行数 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+```
+
+> ⚠️注意：`line-clamp` 可以把块容器中的内容限制为指定的行数。它只有在 `display` 属性设置成 `-webkit-box` 或者 `-webkit-inline-box` 并且 `box-orient` 属性设置成 `vertical` 时才有效果。
