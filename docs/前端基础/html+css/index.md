@@ -551,7 +551,7 @@ BFC：块级格式化上下文，就是一个独立的布局环境，BFC 里面�
 
 ```css
 .box {
-  display: -webkit-box; /* 使用 Flexbox 布局 */
+  display: -webkit-box; /* 作为弹性伸缩盒子模型显示 */
   -webkit-box-orient: vertical; /* 设置盒子为垂直方向排列，必须要在 -webkit-box 下才能使用 */
   -webkit-line-clamp: 2; /* 限制显示的行数 */
   overflow: hidden;
@@ -559,4 +559,98 @@ BFC：块级格式化上下文，就是一个独立的布局环境，BFC 里面�
 }
 ```
 
-> ⚠️注意：`line-clamp` 可以把块容器中的内容限制为指定的行数。它只有在 `display` 属性设置成 `-webkit-box` 或者 `-webkit-inline-box` 并且 `box-orient` 属性设置成 `vertical` 时才有效果。
+> ⚠️ 注意：`line-clamp` 可以把块容器中的内容限制为指定的行数。它只有在 `display` 属性设置成 `-webkit-box` 或者 `-webkit-inline-box` 并且 `box-orient` 属性设置成 `vertical` 时才有效果。
+
+## 问题 18：position 的值
+
+- **static（静态定位）**：
+  - 默认值。
+  - 元素按照文档流正常排列，不受其他定位属性影响。
+  - `top`、`right`、`bottom`、`left` 属性不起作用。
+- **relative（相对定位）**：
+  - 元素相对于其正常位置定位。
+  - 可以使用 `top`、`right`、`bottom`、`left` 属性来调整元素的位置。
+  - 相对定位不会脱离文档流，其他元素仍然占据原来的位置。
+- **absolute（绝对定位）**：
+  - 元素相对于最近的已定位祖先元素定位，如果没有已定位的祖先元素，则相对于初始包含块（通常是浏览器窗口）定位。
+  - 使用 `top`、`right`、`bottom`、`left` 属性来精确控制位置。
+  - 绝对定位会脱离文档流，不再占据原来的位置。
+- **fixed（固定定位）**：
+  - 元素相对于视口定位，不随页面滚动而移动。
+  - 使用 `top`、`right`、`bottom`、`left` 属性来控制位置。
+  - 固定定位脱离文档流，不占据原来的位置。
+- **sticky（粘性定位）**：
+  - 元素在跨越特定阈值前表现为相对定位，之后表现为固定定位。
+  - 通常用于创建“粘性”导航栏或侧边栏。
+  - 使用 `top`、`right`、`bottom`、`left` 属性来控制位置。
+
+## 问题 19：css 哪些属性可以继承？
+
+**可继承属性**：
+
+1. **字体系列属性**
+   - font-family：字体系列
+   - font-weight：字体的粗细
+   - font-size：字体的大小
+2. **文本系列属性**
+   - text-align：文本水平对齐
+   - line-height：行高
+   - word-spacing：单词之间的间距
+   - color：文本颜色
+
+**不可继承属性**：
+
+1. **display**：规定元素应该生成的框的类型
+2. **盒子模型的属性**：
+   - width
+   - height
+   - margin
+   - border
+   - padding
+3. **背景属性**：
+   - background
+   - background-color
+   - background-image
+   - background-repeat
+   - background-position
+   - background-attachment
+4. **定位属性**：
+   - float
+   - clear
+   - position
+   - left
+   - top
+   - right
+   - bottom
+
+## 问题 20：什么是物理像素，逻辑像素和像素密度，为什么在移动端开发时需要用到@3x, @2x 这种图片？
+
+**物理像素**：物理像素是指设备上实际显示的像素数量，通常与设备屏幕的尺寸和分辨率有关。如 1920×1080，表示水平方向有 1920 个物理像素，垂直方向有 1080 个物理像素。（计算公式：`物理像素 = 逻辑像素 * 像素密度`）
+
+**逻辑像素**：逻辑像素是指网页上的像素数量，通常与 CSS 的 `font-size`、`width`、`height`、`margin`、`padding` 等属性有关，平时写的 CSS 的 px 值就是逻辑像素。
+
+**像素密度**：像素密度是指单位面积内物理像素的数量。
+
+例如：一个手机为 1242\*2688 物理像素，如果给一个 div 元素宽度为 414px，1242/414=3，也就是`一个逻辑像素=3个物理像素`，就说这个屏幕的像素密度为 3，也就是常说的 3 倍屏。
+
+对于图片来说，为了保证其不失真，1 个图片像素至少要对应一个物理像素，假如原始图片是 1000 像素，那么在 3 倍屏上就要放一个 3000 像素的图片才能保证 1 个物理像素至少对应一个图片像素，才能不失真。
+
+## 问题 21：CSS 优化和提高性能的方法有哪些？
+
+1. **css 压缩**
+2. **减少使用@import，建议使用 link**
+3. **使用精灵图**
+4. **尽量减少页面重排、重绘**
+5. **优化 CSS 选择器**
+   - 避免使用通配符选择器：如`*`，它会匹配页面上的所有元素，计算量较大，容易导致性能问题。
+   - 减少后代选择器的嵌套深度：后代选择器如 ul li a，嵌套层级过深会增加浏览器的匹配成本，尽量使用直接子代选择器`>`来替代，如 ul > li > a。
+
+## 问题 22：z-index 属性在什么情况下会失效？
+
+z-index 元素的 position 属性需要是 relative，absolute 或是 fixed。
+
+z-index 属性在下列情况下会失效：
+
+- 父元素 position 为 relative 时，子元素的 z-index 失效。解决：父元素 position 改为 absolute 或 static；
+- 元素没有设置 position 属性为非 static 属性。解决：设置该元素的 position 属性为 relative，absolute 或是 fixed 中的一种；
+- 元素在设置 z-index 的同时还设置了 float 浮动。解决：float 去除，改为 display：inline-block；

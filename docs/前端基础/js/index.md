@@ -795,9 +795,9 @@ const res = str.split('', 4) // [ 'h', 'e', 'l', 'l' ] 将前4个字符进行切
 const res = str.split(' ').join('-') // hello-world
 
 // 截取
-const res = str.slice(1,2) // e 开始下标，结束下标（不包括结束处的字符）
-const res = str.substr(1,2) // el 在字符串中抽取从开始下标开始的指定数目的字符
-const res = str.substring(1,2) // e 和 slice 一样
+const res = str.slice(1, 2) // e 开始下标，结束下标（不包括结束处的字符）
+const res = str.substr(1, 2) // el 在字符串中抽取从开始下标开始的指定数目的字符
+const res = str.substring(1, 2) // e 和 slice 一样
 
 // 替换
 const res = str.replace('l', 'L') // heLlo world 字符串替换，它只替换第一个匹配子串
@@ -1794,6 +1794,14 @@ const p = myNew(Person, 'wifi', 18)
 console.log(p)
 ```
 
+### 为什么箭头函数不能使用 new 关键字的？
+
+- **没有自身的 this 绑定**：箭头函数没有自己独立的 this 值，它的 this 是继承自外层作用域的。而 new 操作符在执行时需要一个独立的 this 来指向新创建的对象，箭头函数无法满足这一要求。
+
+- **没有 prototype 属性**：每个函数在创建时都会有一个 prototype 属性，用于设置和访问对象的原型。new 操作符会利用这个 prototype 属性来为新创建的对象设置原型链。但箭头函数没有 prototype 属性，所以不能通过 new 来创建对象并设置原型链。
+
+- **不可被构造**：箭头函数没有 constructor，而 new 操作符在执行过程中会调用构造函数的 constructor 来创建新对象，由于箭头函数不存在 constructor，因此无法使用 new 来调用。（原型链部分有讲）
+
 ## 问题 36：call 和 apply 的链式调用
 
 > 考察：原型和原型链
@@ -2660,3 +2668,101 @@ Array.from(arguments)
 
 - concat：该方法用于合并多个数组，进而返回一个全新的数组，而原数组不会发生改变。
 - push：此方法用于在数组的末尾添加一个或多个元素，并且会改变原数组。
+
+## 问题 55：知道变量提升吗？var、let、const 的区别？
+
+### 变量提升
+
+js 中，在代码执行前，会将变量、函数的声明提前到作用域的顶部，而赋值不会被提升。并且函数声明的优先级要高于变量声明。
+
+::: code-group
+
+```js [源代码]
+console.log(a) // undefined
+var a = 1
+```
+
+```js [提升后]
+var a
+console.log(a)
+a = 1
+```
+
+:::
+
+变量提升 & 函数提升（优先级）
+
+> 在上面 16 题也有说
+
+::: code-group
+
+```js [源代码]
+// 以下代码输出什么结果
+console.log(s)
+var s = 2
+function s() {}
+console.log(s)
+```
+
+```js [提升后]
+function s() {}
+console.log(s)
+s = 2
+console.log(s)
+```
+
+:::
+
+### var 和 let、const 区别
+
+1. **全局污染**： var 会污染全局作用域，而 let 和 const 不会。
+2. **块级作用域**： let 是块级作用域，var 是函数作用域，没有块级作用域。（块级作用域指的是由 `{}` 包裹的代码块）
+
+::: details var 的作用域
+
+**全局作用域中使用 var**
+
+当 var 在全局作用域（也就是在任何函数外部）被使用时，声明的变量会成为全局对象的属性。在浏览器环境下，全局对象是 window；在 Node.js 环境下，全局对象是 global。
+
+**函数作用域中使用 var**
+
+当 var 在函数内部使用时，它声明的变量拥有函数作用域，并非全局作用域。
+
+```js
+function exampleFunction() {
+  var localVar = '这是局部变量'
+  console.log(localVar) // 输出 '这是局部变量'
+}
+exampleFunction()
+console.log(typeof localVar) // 输出 'undefined'，因为 localVar 不在全局作用域
+```
+
+**块级作用域与 var**
+
+需要注意的是，var 没有块级作用域。这意味着在 if 语句、for 循环等代码块中使用 var 声明的变量，其作用域是包含它的函数或者全局作用域。
+
+```js
+if (true) {
+  var blockVar = '这是块内变量'
+}
+console.log(blockVar) // 输出 '这是块内变量'，因为 var 没有块级作用域
+```
+
+:::
+
+3. **暂时性死区**：let、var 都有变量提升，但是 let 它有暂时性死区（TDZ），在声明之前是不能使用的
+   - var：存在变量提升现象。也就是在代码执行前，var 声明的变量会被提升至当前作用域的顶部，不过其赋值操作不会被提升。
+   ```js
+   console.log(a) // 输出 undefined
+   var a = 5
+   ```
+   - let：虽然也会有变量提升，但是在变量声明之前访问它会引发 ReferenceError 出错，这被称作 “暂时性死区”（TDZ），也就是在声明之前是不能使用的。
+   ```js
+   console.log(b) // 报错：Cannot access 'b' before initialization
+   let b = 10
+   ```
+   > **var、let 声明的变量都会到达执行上下文的**，没有到达的话是不能使用的。let 声明的相当于加了把“锁”，在未到达定义位置，上面是不能使用的，这个就是“暂时性死区”
+4. **重复声明**：在同一作用域内，let 和 const 不允许重复声明，var 允许重复声明。
+
+> let、const 与 var 的区别是一致的，let 是声明变量，而 const 是声明常量
+
