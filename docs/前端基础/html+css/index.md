@@ -654,3 +654,247 @@ z-index 属性在下列情况下会失效：
 - 父元素 position 为 relative 时，子元素的 z-index 失效。解决：父元素 position 改为 absolute 或 static；
 - 元素没有设置 position 属性为非 static 属性。解决：设置该元素的 position 属性为 relative，absolute 或是 fixed 中的一种；
 - 元素在设置 z-index 的同时还设置了 float 浮动。解决：float 去除，改为 display：inline-block；
+
+## 问题 23：flex 布局的理解？flex:1 表示什么？
+
+flex 布局也叫做弹性布局，作为 flex 的容器，容器默认存在两根轴：水平的主轴和垂直的交叉轴，项目默认沿水平主轴排列。
+
+### flex-grow
+
+`flex-grow: <number>`：`<number>`是一个无单位的数字，默认值为 0。此数字表示弹性子元素相对于其他子元素分配剩余空间的比例。
+
+::: details 示例
+
+**1、元素宽度**：
+
+.item1 的初始宽度为 100px。.item2 和 .item3 没有显式设置 width，因此它们的初始宽度为内容的默认宽度（假设为 0px，因为没有其他信息）。
+
+初始总宽度 = 100px + 0px + 0px = 100px。
+
+**2、计算剩余空间**：
+
+容器宽度为 300px，所以剩余空间为：容器宽度 - 初始总宽度 = 300px - 100px = 200px。
+
+**3、按比例分配剩余空间**：
+
+`flex-grow` 决定了剩余空间如何分配。各子项的 flex-grow 值分别为：
+
+- .item1：1
+- .item2：2
+- .item3：1
+
+总 flex-grow = 1 + 2 + 1 = 4
+
+每个子项分到的剩余空间为：
+
+- .item1 分到的空间：(1 / 4) \* 200px = 50px
+- .item2 分到的空间：(2 / 4) \* 200px = 100px
+- .item3 分到的空间：(1 / 4) \* 200px = 50px
+
+**4、计算最终宽度**：
+
+将分配的剩余空间加到初始宽度上：
+
+- .item1 的最终宽度：100px + 50px = 150px
+- .item2 的最终宽度：0px + 100px = 100px
+- .item3 的最终宽度：0px + 50px = 50px
+
+![flex-grow](./img/flex-grow.png)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      .flex-container {
+        display: flex;
+        width: 300px;
+      }
+
+      .flex-item {
+        height: 50px;
+        text-align: center;
+        line-height: 50px;
+      }
+
+      .item1 {
+        background-color: lightblue;
+        width: 100px;
+        flex-grow: 1;
+      }
+
+      .item2 {
+        background-color: lightgreen;
+        flex-grow: 2;
+      }
+
+      .item3 {
+        background-color: lightcoral;
+        flex-grow: 1;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="flex-container">
+      <div class="flex-item item1">1</div>
+      <div class="flex-item item2">2</div>
+      <div class="flex-item item3">3</div>
+    </div>
+  </body>
+</html>
+```
+
+:::
+
+### flex-shrink
+
+`flex-shrink: <number>`：`<number>` 是一个无单位的数字，默认值为 1。此数字表示弹性子元素在**空间不足**（容器 width < 几个元素的 withd 和）时相对于其他子元素收缩的比例。
+
+::: details 示例
+
+当容器宽度不够时，根据元素设置的 `flex-shrink` 值进行收缩，元素必须设置 `width` 值。
+
+![flex-shrink](./img/flex-shrink.png)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <style>
+      .flex-container {
+        display: flex;
+        width: 300px;
+      }
+
+      .flex-item {
+        width: 150px;
+        height: 50px;
+        text-align: center;
+        line-height: 50px;
+      }
+
+      .item1 {
+        background-color: lightblue;
+        flex-shrink: 1;
+      }
+
+      .item2 {
+        background-color: lightgreen;
+        flex-shrink: 2;
+      }
+
+      .item3 {
+        background-color: lightcoral;
+        flex-shrink: 1;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="flex-container">
+      <div class="flex-item item1">1</div>
+      <div class="flex-item item2">2</div>
+      <div class="flex-item item3">3</div>
+    </div>
+  </body>
+</html>
+```
+
+:::
+
+### flex-basis
+
+`flex-basis: <length> | <percentage> | auto | content;`，它主要用于定义弹性子元素在分配额外空间或收缩之前的初始大小。
+
+- `<length>`：可以是固定的长度值，如 px、em、rem 等，例如 flex-basis: 200px;。
+- `<percentage>`：相对于弹性**容器的宽度或高度**的百分比，例如 flex-basis: 50%;。
+- `auto`：默认值，元素会根据自身内容的大小来确定初始大小。如果元素设置了 width（对于水平方向的弹性容器）或 height（对于垂直方向的弹性容器），则 flex-basis 会采用这个值；如果没有设置，则根据内容自动调整。
+
+  ```css
+  .child {
+    width: 200px;
+    flex-basis: auto;
+  }
+  ```
+
+  此时子元素的 flex-basis 会采用 width 的值，即 200px。
+
+- `content`：元素的初始大小会根据其内容的大小动态调整。
+
+::: details 示例
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <style>
+      .flex-container {
+        display: flex;
+        border: 1px solid black;
+        width: 500px;
+      }
+
+      .flex-item {
+        height: 50px;
+        text-align: center;
+        line-height: 50px;
+      }
+
+      .item1 {
+        background-color: lightblue;
+        flex-basis: 100px;
+      }
+
+      .item2 {
+        background-color: lightgreen;
+        flex-basis: 30%; /* 30%：150px */
+      }
+
+      .item3 {
+        background-color: lightcoral;
+        width: 150px;
+        flex-basis: auto; /* auto：150px */
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="flex-container">
+      <div class="flex-item item1">1</div>
+      <div class="flex-item item2">2</div>
+      <div class="flex-item item3">3</div>
+    </div>
+  </body>
+</html>
+```
+
+:::
+
+### flex:1 表示什么？
+
+flex 属性是 flex-grow，flex-shrink 和 flex-basis 的简写，默认值为`0 1 auto`。flex:1 表示 `flex: 1 1 0%`：
+
+- 第一个参数表示: flex-grow 定义项目的放大比例，默认为 0，即如果存在剩余空间，也不放大（当为 0 的情况）；
+- 第二个参数表示: flex-shrink 定义了项目的缩小比例，默认为 1，即如果空间不足，该项目将缩小；
+- 第三个参数表示: flex-basis 给上面两个属性分配多余空间之前, 计算项目是否有多余空间, 默认值为 auto, 即项目本身的大小。
