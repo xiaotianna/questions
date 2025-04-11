@@ -129,6 +129,9 @@
 
 ## 面试题 8：常见的 HTTP 状态码以及代表的意义
 
+- 1xx：属于信息性状态码，表示服务器已收到客户端的请求，正在处理中，需要客户端继续操作或者等待处理结果。常见的 1xx 状态码如下：
+  - 100 Continue（继续）：先发送请求头，询问服务器是否愿意接收主体，服务器返回此状态码，表示服务器已经接受请求，需要客户端继续发送请求体。用于减少不必要的数据传输，提高性能。
+  - 101 Switching Protocols（切换协议）：此状态码表示服务器根据客户端的请求，准备切换协议。最常见的应用场景是 WebSocket 协议的握手阶段
 - 200 OK：请求成功，服务器成功处理了请求。
 - 201 Created：请求已成功，并在服务器上创建了新的资源。
 - 204 No Content：服务器成功处理了请求，但没有返回任何内容。
@@ -214,15 +217,15 @@ Cookie 诞生的主要目的是<u>为了解决 HTTP 协议的无状态性问题<
 
 ### Cookie 常用字段
 
-- **Name**（名称）：Cookie的名称，用于标识特定的Cookie。每个Cookie都有一个唯一的名称，例如`username`、`session_id`等。通过名称，服务器和浏览器可以识别和操作特定的Cookie。
-- **Value**（值）：Cookie的值，是与名称相关联的数据。例如，`username` Cookie的值可能是用户的登录名，`session_id` Cookie的值可能是一个唯一的会话标识符。
-- **Domain**（域）：指定Cookie所属的域名。Cookie只能被发送到与该域名匹配的服务器上。例如，如果`Domain`设置为`example.com`，那么只有在访问`example.com`及其子域名（如`www.example.com`）时，浏览器才会发送该Cookie。
-- **Path**（路径）：指定Cookie适用的路径。只有当请求的URL路径与该路径匹配时，浏览器才会发送Cookie。例如，`Path`设置为`/admin`，那么只有在访问`example.com/admin`及其子路径下的页面时，才会发送该Cookie。
-- **Expires** / **Max-Age**：用于设置Cookie的过期时间。
-    - **Expires**：指定一个具体的日期和时间，当到达该时间后，Cookie将被删除。例如，`Expires=Wed, 31 Dec 2025 23:59:59 GMT`。
-    - **Max-Age**：指定从当前时间开始，Cookie有效的秒数。例如，`Max-Age=3600`表示Cookie将在1小时后过期。如果不设置这两个字段，Cookie通常在浏览器关闭时就会被删除。
-- **Secure**：该字段是一个布尔值，表示Cookie是否只能通过安全的HTTPS连接发送。如果设置了`Secure`，那么在HTTP连接下，浏览器不会发送该Cookie，以确保数据传输的安全性。
-- **HttpOnly**：也是一个布尔值，设置为`true`时，Cookie只能通过HTTP协议访问，无法通过客户端脚本（如JavaScript）访问。这有助于防止跨站点脚本攻击（XSS）窃取Cookie信息。
+- **Name**（名称）：Cookie 的名称，用于标识特定的 Cookie。每个 Cookie 都有一个唯一的名称，例如`username`、`session_id`等。通过名称，服务器和浏览器可以识别和操作特定的 Cookie。
+- **Value**（值）：Cookie 的值，是与名称相关联的数据。例如，`username` Cookie 的值可能是用户的登录名，`session_id` Cookie 的值可能是一个唯一的会话标识符。
+- **Domain**（域）：指定 Cookie 所属的域名。Cookie 只能被发送到与该域名匹配的服务器上。例如，如果`Domain`设置为`example.com`，那么只有在访问`example.com`及其子域名（如`www.example.com`）时，浏览器才会发送该 Cookie。
+- **Path**（路径）：指定 Cookie 适用的路径。只有当请求的 URL 路径与该路径匹配时，浏览器才会发送 Cookie。例如，`Path`设置为`/admin`，那么只有在访问`example.com/admin`及其子路径下的页面时，才会发送该 Cookie。
+- **Expires** / **Max-Age**：用于设置 Cookie 的过期时间。
+  - **Expires**：指定一个具体的日期和时间，当到达该时间后，Cookie 将被删除。例如，`Expires=Wed, 31 Dec 2025 23:59:59 GMT`。
+  - **Max-Age**：指定从当前时间开始，Cookie 有效的秒数。例如，`Max-Age=3600`表示 Cookie 将在 1 小时后过期。如果不设置这两个字段，Cookie 通常在浏览器关闭时就会被删除。
+- **Secure**：该字段是一个布尔值，表示 Cookie 是否只能通过安全的 HTTPS 连接发送。如果设置了`Secure`，那么在 HTTP 连接下，浏览器不会发送该 Cookie，以确保数据传输的安全性。
+- **HttpOnly**：也是一个布尔值，设置为`true`时，Cookie 只能通过 HTTP 协议访问，无法通过客户端脚本（如 JavaScript）访问。这有助于防止跨站点脚本攻击（XSS）窃取 Cookie 信息。
 
 有关安全性属性：Domain、Secure、HttpOnly
 
@@ -310,24 +313,28 @@ Cookie（HTTP Cookie）和 Session（会话）都是用于在 Web 应用程序�
 浏览器会标识 `Origin` 字段，服务器允许跨域时，通常会在响应头中添加 `Access-Control-Allow-Origin` 字段。
 
 后端设置为：
-- `Access-Control-Allow-Origin: *`（它的值可以是具体的域名，表示仅允许该域名发起的跨域请求；也可以是*，表示允许任何源发起的跨域请求。）
-- 后端支持预检请求options：`Access-Control-Allow-Methods`、`Access-Control-Allow-Headers` 设置允许的请求方法和请求头。
 
-以express为例：
+- `Access-Control-Allow-Origin: *`（它的值可以是具体的域名，表示仅允许该域名发起的跨域请求；也可以是\*，表示允许任何源发起的跨域请求。）
+- 后端支持预检请求 options：`Access-Control-Allow-Methods`、`Access-Control-Allow-Headers` 设置允许的请求方法和请求头。
+
+以 express 为例：
 
 ```js
 // 处理 OPTIONS 请求
 app.options('*', (req, res) => {
-    // 设置允许的请求方法
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    // 设置允许的请求头
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    // 设置允许的源
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    // 设置预检请求的缓存时间
-    res.setHeader('Access-Control-Max-Age', '86400'); 
-    res.status(200).send();
-});
+  // 设置允许的请求方法
+  res.setHeader(
+    'Access-Control-Allow-Methods',
+    'GET, POST, PUT, DELETE, OPTIONS'
+  )
+  // 设置允许的请求头
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  // 设置允许的源
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  // 设置预检请求的缓存时间
+  res.setHeader('Access-Control-Max-Age', '86400')
+  res.status(200).send()
+})
 ```
 
 :::
@@ -363,7 +370,7 @@ app.options('*', (req, res) => {
 
 ## 面试题 18：websocket
 
-WebSocket是在应用层实现的协议。尽管WebSocket的握手过程使用了HTTP协议，但一旦握手成功，WebSocket连接会升级为全双工的通信通道，不再遵循HTTP协议的规则。在握手成功后，WebSocket协议会在应用层上定义消息格式和通信规则，通过TCP协议在传输层上进行数据传输，使得客户端和服务器可以通过发送和接收WebSocket消息来进行实时的双向通信。 
+WebSocket 是在应用层实现的协议。尽管 WebSocket 的握手过程使用了 HTTP 协议，但一旦握手成功，WebSocket 连接会升级为全双工的通信通道，不再遵循 HTTP 协议的规则。在握手成功后，WebSocket 协议会在应用层上定义消息格式和通信规则，通过 TCP 协议在传输层上进行数据传输，使得客户端和服务器可以通过发送和接收 WebSocket 消息来进行实时的双向通信。
 
 支持传输数据的格式：
 
@@ -372,7 +379,7 @@ WebSocket是在应用层实现的协议。尽管WebSocket的握手过程使用�
 
 ## 面试题 19：websocket 建立连接的过程
 
-1. **客户端发起HTTP握手请求**：客户端首先向服务器发起一个标准的HTTP请求，这个请求包含了一些特定的头部，用于请求建立WebSocket连接。
+1. **客户端发起 HTTP 握手请求**：客户端首先向服务器发起一个标准的 HTTP 请求，这个请求包含了一些特定的头部，用于请求建立 WebSocket 连接。
 
 ```http
 GET /chat HTTP/1.1 # 请求的路径和协议版本。
@@ -380,18 +387,18 @@ Host: server.example.com # 服务器的主机名。
 Upgrade: websocket # 表示请求协议升级到WebSocket。
 Connection: Upgrade # 表示希望升级连接。
 Sec-WebSocket-Key: dGhLIHNvbXBsZSBuY2jZQ== # Base64编码的随机密钥，服务器用于生成响应中的`Sec-WebSocket-Accept`。
-Sec-WebSocket-Version: 13 # WebSocket协议版本，当前版本是13。 
+Sec-WebSocket-Version: 13 # WebSocket协议版本，当前版本是13。
 ```
 
-2. **服务器响应HTTP握手请求**：如果服务器支持WebSocket并同意升级连接，则会返回一个101 Switching Protocols状态码的响应，表示协议切换成功。
+2. **服务器响应 HTTP 握手请求**：如果服务器支持 WebSocket 并同意升级连接，则会返回一个 101 Switching Protocols 状态码的响应，表示协议切换成功。
 
 ```http
 HTTP/1.1 101 Switching Protocols # 状态码表示协议切换。
 Upgrade: websocket # 确认升级到WebSocket协议。
 Connection: Upgrade # 确认连接升级。
-Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo= # 服务器基于客户端提供的`Sec-WebSocket-Key`计算得到值，保证握手安全。 
+Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo= # 服务器基于客户端提供的`Sec-WebSocket-Key`计算得到值，保证握手安全。
 ```
 
-3. **WebSocket连接建立**：在服务器响应成功后，客户端和服务器之间的HTTP连接就升级为WebSocket连接，从此可以进行全双工的实时通信。此时，HTTP头部已经不再使用，取而代之的是WebSocket数据帧。
+3. **WebSocket 连接建立**：在服务器响应成功后，客户端和服务器之间的 HTTP 连接就升级为 WebSocket 连接，从此可以进行全双工的实时通信。此时，HTTP 头部已经不再使用，取而代之的是 WebSocket 数据帧。
 
-4. **连接关闭**：WebSocket连接可以由客户端或服务器任意一方关闭。关闭连接时，发送一个控制帧表示关闭请求，连接将以有序的方式关闭。 
+4. **连接关闭**：WebSocket 连接可以由客户端或服务器任意一方关闭。关闭连接时，发送一个控制帧表示关闭请求，连接将以有序的方式关闭。

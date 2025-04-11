@@ -262,7 +262,7 @@ BFC：块级格式化上下文，就是一个独立的布局环境，BFC 里面�
 
 ### 2. BFC 的布局规则（特性）
 
-1. 垂直方向上的距离由 `margin` 决定，在同一个 BFC 里的相邻的两个块的 `margin` 会重叠
+1. 垂直方向上的距离由 `margin` 决定，在同一个 BFC 里的相邻的两个块的 `margin` 会重叠（水平方向，块级元素会换行，不存在并排显示）
 
 2. 开启了 `BFC` 的块和浮动元素不会重叠，会挨着浮动元素显示。
 
@@ -490,6 +490,15 @@ BFC：块级格式化上下文，就是一个独立的布局环境，BFC 里面�
   - sm
   - md
   - lg
+
+关于兼容： 页面头部必须有 meta 声明的 viewport，确保页面在不同设备上能正确缩放。。
+
+```html
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+/>
+```
 
 ## 问题 16：动画的实现方式和区别？
 
@@ -898,3 +907,48 @@ flex 属性是 flex-grow，flex-shrink 和 flex-basis 的简写，默认值为`0
 - 第一个参数表示: flex-grow 定义项目的放大比例，默认为 0，即如果存在剩余空间，也不放大（当为 0 的情况）；
 - 第二个参数表示: flex-shrink 定义了项目的缩小比例，默认为 1，即如果空间不足，该项目将缩小；
 - 第三个参数表示: flex-basis 给上面两个属性分配多余空间之前, 计算项目是否有多余空间, 默认值为 auto, 即项目本身的大小。
+
+## 问题 24：grid 布局
+
+`grid`布局是一种二维网格布局模型
+
+- `grid-template-columns: px / fr / % / auto;`：表格的列数，可以设置列宽，单位可以是 px、fr、%、auto 等。`grid-template-rows: repeat(3, 1fr)` 重复 3 行，每行高度为 1fr，即平均分配。
+
+  - 如果是 1fr，1 份，则表示剩余空间均分，可以设置多个，用空格隔开。
+  - 如果设置 px / %，宽度大于容器的宽度，不会自动换行，列数值的个数决定的，`grid-template-columns: 100px 100px 100px;`，有 3 列。
+  - 如果设置 auto，子元素宽度会自动占满，`grid-template-columns: 100px auto;`，有 3 列。
+
+- `grid-template-rows: px / fr / % / auto;`：表格的行数，可以设置行高，单位可以是 px、fr、%等
+- `grid-gap`：声明行间距和列间距
+- `grid-row-gap` 和 `grid-column-gap`：声明行间距和列间距
+- `grid-template-areas`：属性用于定义区域，一个区域由一个或者多个单元格组成。一般这个属性跟网格元素的 `grid-area` 一起使用，我们在这里一起介绍。`grid-area` 属性指定项目放在哪一个区域。
+
+  ```css
+  .wrapper {
+    display: grid;
+    grid-template-areas:
+      '. header  header'
+      'sidebar content content';
+  }
+
+  .item1 {
+    grid-area: sidebar;
+  }
+
+  .item2,
+  .item3 {
+    /** item2，item3 会合并 */
+    grid-area: content;
+  }
+
+  .item4,
+  .item5 {
+    grid-area: header;
+  }
+  ```
+
+## 问题 25：如何解决 1px 问题？
+
+1px 问题指的是：在一些 `Retina` 屏幕 的机型上，移动端页面的 1px 会变得很粗，呈现出不止 1px 的效果。原因很简单——CSS 中的 1px 并不能和移动设备上的 1px 划等号。它们之间的比例关系有一个专门的属性来描述：
+
+> 可以参考：问题 20：什么是物理像素，逻辑像素和像素密度

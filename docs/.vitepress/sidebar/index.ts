@@ -185,5 +185,9 @@ export const sidebar = {
       text: 'wxg-企业微信部门面经',
       link: '/面经/wxg-企业微信部门面经',
     },
+    {
+      text: 'wxg-微信公众号面经',
+      link: '/面经/wxg-微信公众号面经',
+    }
   ]
 }

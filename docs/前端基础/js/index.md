@@ -1868,8 +1868,8 @@ const COLOR_GREEN = Symbol('green')
 
 ```js
 const person = {
-  firstName: 'John',
-  lastName: 'Doe'
+  _firstName: 'John', // _xxx 表示使用私有变量存储实际值
+  _lastName: 'Doe'
 }
 
 // 监听属性 "firstName"
