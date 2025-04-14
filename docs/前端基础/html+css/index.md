@@ -951,4 +951,69 @@ flex 属性是 flex-grow，flex-shrink 和 flex-basis 的简写，默认值为`0
 
 1px 问题指的是：在一些 `Retina` 屏幕 的机型上，移动端页面的 1px 会变得很粗，呈现出不止 1px 的效果。原因很简单——CSS 中的 1px 并不能和移动设备上的 1px 划等号。它们之间的比例关系有一个专门的属性来描述：
 
-> 可以参考：问题 20：什么是物理像素，逻辑像素和像素密度
+```js
+window.devicePixelRatio = 设备的物理像素 / CSS像素
+// devicePixelRatio = 2，这就意味着设置的 1px CSS 像素，在这个设备上实际会用 2 个物理像素单元来进行渲染，所以实际看到的一定会比 1px 粗一些。
+```
+
+> `Retina` 屏幕：苹果公司推出的一种高分辨率显示屏幕技术，例如 iPhone 6 Plus、iPad Pro 等。
+
+> 可以参考：[问题 20：什么是物理像素，逻辑像素和像素密度](./#问题-20-什么是物理像素-逻辑像素和像素密度-为什么在移动端开发时需要用到-3x-2x-这种图片)
+
+### 解决 1px 问题的三种思路：
+
+**思路一：直接写 0.5px**
+
+可以先在 JS 中拿到 window.devicePixelRatio 的值，然后把这个值通过 JSX 或者模板语法给到 CSS 的 data 里，达到这样的效果（这里用 JSX 语法做示范）
+
+```jsx
+<div
+  id='container'
+  data-device={window.devicePixelRatio}
+></div>
+```
+
+然后就可以在 CSS 中用属性选择器来命中 devicePixelRatio 为某一值的情况，比如说这里尝试命中 devicePixelRatio 为 2 的情况：
+
+```css
+#container[data-device='2'] {
+  border: 0.5px solid #333;
+}
+```
+
+这种方法的缺陷在于兼容性不行，IOS 系统需要 8 及以上的版本，安卓系统则直接不兼容。
+
+**思路二：伪元素先放大后缩小**
+
+**思路三：viewport 缩放来解决**
+
+这个思路就是对 meta 标签里几个关键属性下手
+
+默认的：
+
+```html
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+/>
+```
+
+修改后的：缩放比例为 0.5
+
+```html
+<meta
+  name="viewport"
+  content="initial-scale=0.5, maximum-scale=0.5, minimum-scale=0.5, user-scalable=no"
+/>
+```
+
+也可以 js 动态实现：
+
+```js
+const scale = 1 / window.devicePixelRatio
+// 这里 metaEl 指的是 meta 标签对应的 Dom
+metaEl.setAttribute(
+  'content',
+  `width=device-width,user-scalable=no,initial-scale=${scale},maximum-scale=${scale},minimum-scale=${scale}`
+)
+```
