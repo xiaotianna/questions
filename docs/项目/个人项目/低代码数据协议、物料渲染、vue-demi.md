@@ -1,4 +1,4 @@
-# 低代码数据协议、物料渲染
+# 低代码数据协议、物料渲染、vue-demi
 
 ## 低代码数据协议
 
@@ -26,6 +26,8 @@
 
 ## vue-demi 的坑
 
+### 问题 1
+
 在进行多版本打包时，vue 的版本会错乱，这时候就需要根据 pnpm 中`packageExtensions`对 vue 版本进行覆盖
 
 > 在 pnpm 中，packageExtensions 的作用是对 package.json 文件中的依赖进行扩展或覆盖，而无需直接修改项目的 package.json 文件。它允许你在全局或局部范围内自定义依赖的版本、配置等信息，而不影响原始项目的文件内容。
@@ -43,9 +45,13 @@
         "peerDependencies": {
           "vue": "^2.7.16"
         }
-      },
+      }
     }
   },
   "devDependencies": {}
 }
 ```
+
+### 问题 2
+
+`vue-demi` 的 SFC 模版问题，需要采用选项式 api 才能实现，组合式 api 在 vue2 版本可能有 bug，导致内容出不来

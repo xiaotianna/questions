@@ -5,8 +5,9 @@ export const sidebar = {
       items: [
         { text: 'HTML + CSS', link: '/前端基础/html+css/' },
         { text: 'JS', link: '/前端基础/js/' },
+        { text: 'TS', link: '/前端基础/js/ts' },
         { text: 'Promise', link: '/前端基础/promise/' },
-        { text: '手写题', link: '/前端基础/手写题/' }
+        { text: '手写题', link: '/前端基础/手写题/' },
       ]
     },
     {
@@ -101,8 +102,8 @@ export const sidebar = {
           link: '/项目/个人项目/渲染区样式隔离、相对区域响应式'
         },
         {
-          text: '低代码数据协议、物料渲染',
-          link: '/项目/个人项目/低代码数据协议、物料渲染'
+          text: '低代码数据协议、物料渲染、vue-demi',
+          link: '/项目/个人项目/低代码数据协议、物料渲染、vue-demi'
         },
         {
           text: '低代码项目JSON Schema与参数校验',
@@ -126,7 +127,8 @@ export const sidebar = {
           text: 'im项目为什么选择socket.io',
           link: '/项目/个人项目/im项目为什么选择socket.io'
         },
-        { text: '大文件上传', link: '/项目/个人项目/大文件上传' }
+        { text: '大文件上传', link: '/项目/个人项目/大文件上传' },
+        { text: 'electron兼容性处理', link: '/项目/个人项目/electron兼容性处理' },
       ]
     },
     {
