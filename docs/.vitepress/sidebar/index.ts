@@ -191,8 +191,12 @@ export const sidebar = {
       link: '/面经/wxg-企业微信部门面经'
     },
     {
-      text: 'wxg-微信公众号面经',
-      link: '/面经/wxg-微信公众号面经'
+      text: 'wxg一面-微信公众号面经',
+      link: '/面经/wxg一面-微信公众号面经'
+    },
+    {
+      text: 'wxg二面-微信公众号面经',
+      link: '/面经/wxg二面-微信公众号面经'
     }
   ]
 }
