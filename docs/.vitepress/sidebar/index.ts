@@ -197,6 +197,10 @@ export const sidebar = {
     {
       text: 'wxg二面-微信公众号面经',
       link: '/面经/wxg二面-微信公众号面经'
+    },
+    {
+      text: 'csig一面面经',
+      link: '/面经/csig一面面经'
     }
   ]
 }
