@@ -5,7 +5,7 @@ import { sidebar } from './sidebar'
 export default defineConfig({
   title: '前端面试题',
   markdown: {
-    lineNumbers: true
+    lineNumbers: true,
   },
   base: '/questions/',
   themeConfig: {
@@ -24,7 +24,7 @@ export default defineConfig({
                 resetButtonTitle: '清除查询条件',
                 footer: {
                   selectText: '选择',
-                  navigateText: '切换',
+                  navigateText: '切换'
                 }
               }
             }
@@ -37,7 +37,8 @@ export default defineConfig({
       next: '下一页'
     },
     outline: {
-      label: '本页目录'
+      label: '本页目录',
+      level: [2, 3]
     },
     nav: nav,
     sidebarMenuLabel: '菜单',

@@ -112,7 +112,11 @@ export const sidebar = {
         {
           text: '权限控制',
           link: '/项目/个人项目/权限控制'
-        }
+        },
+        {
+          text: '双token',
+          link: '/项目/个人项目/双token'
+        },
       ]
     },
     {
@@ -164,7 +168,8 @@ export const sidebar = {
       text: '算法',
       items: [
         { text: '数据结构', link: '/算法/数据结构/' },
-        { text: '算法题', link: '/算法/算法题/' }
+        { text: '算法题', link: '/算法/算法题/' },
+        { text: '哈希表', link: '/算法/哈希表' },
       ]
     }
   ],

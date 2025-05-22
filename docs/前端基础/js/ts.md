@@ -1,5 +1,52 @@
 # TS
 
+## interface 接口类型
+
+定义对象、数组、函数、类等类型。
+
+```ts
+// 对象
+interface Obj {
+  name: string
+}
+
+// 数组
+interface Arr {
+  [key: number]: string
+}
+
+// 函数
+interface Func {
+  (p: string): void
+}
+
+// 类
+interface Cls {
+    time: number
+}
+class Time implements Cls {
+    time: number
+    constructor(time: number) {}
+}
+```
+
+> ⚠️注意：
+>
+> - 类与类，接口与接口之间使用extends
+> - 类与接口，使用implements
+
+## type 类型别名
+
+自定义类型（可以定义所有类型）
+
+**interface 和 type 的区别**
+
+可以用来自定义类型，类型别名（type）不支持重复定义，接口类型可以
+
+## 泛型
+
+类型参数化 `<T>`
+
 ## TS 的工具类型
 
 ### 1. Partial
@@ -8,13 +55,13 @@
 
 ```ts
 interface PerItf {
-    name:string;
-    age:number;
+  name: string
+  age: number
 }
 
 // Partial作用：把<>里面这个接口类型设置为可缺省的属性，类似于 age?:number|undefined（也可以是undefined）
-let obj:Partial<PerItf> = {
-    name: 'xiaotian'
+let obj: Partial<PerItf> = {
+  name: 'xiaotian'
 }
 ```
 
@@ -24,19 +71,21 @@ let obj:Partial<PerItf> = {
 
 ```ts
 interface Per2Itf {
-    name:string;
-    age:number;
-    height?:number;
+  name: string
+  age: number
+  height?: number
 }
 
 // Required作用：将可缺省的全部变为不可缺省
-let obj2:Required<Per2Itf> = {
-    name: 'xiaotian',
-    age: 19,
-    height: 180 // 不写会报错
+let obj2: Required<Per2Itf> = {
+  name: 'xiaotian',
+  age: 19,
+  height: 180 // 不写会报错
 }
 ```
-### 3.  Pick
+
+### 3. Pick
+
 `Pick<Type, Keys>`用于从一个已有类型中选择特定的属性，从而创建一个新的类型。
 
 - 语法
@@ -44,20 +93,20 @@ let obj2:Required<Per2Itf> = {
 ```ts
 // T：源类型，从中选择属性。
 // K：要选择的属性键，必须是 T 的键（即 keyof T）。
-type Pick<T, K extends keyof T> = { [P in K]: T[P] };
+type Pick<T, K extends keyof T> = { [P in K]: T[P] }
 ```
 
 - 例子
 
 ```ts
 interface User {
-  id: number;
-  name: string;
-  age: number;
-  email: string;
+  id: number
+  name: string
+  age: number
+  email: string
 }
 
-type UserIdName = Pick<User, 'id' | 'name'>;
+type UserIdName = Pick<User, 'id' | 'name'>
 
 /*
 结果:
@@ -77,20 +126,20 @@ type UserIdName = {
 ```ts
 // T：源类型，从中排除属性。
 // K：要排除的属性键，必须是 T 的键（即 keyof T）或其子集。
-type Omit<T, K extends keyof any> = Pick<T, Exclude<keyof T, K>>;
+type Omit<T, K extends keyof any> = Pick<T, Exclude<keyof T, K>>
 ```
 
 - 例子
 
 ```ts
 interface User {
-  id: number;
-  name: string;
-  age: number;
-  email: string;
+  id: number
+  name: string
+  age: number
+  email: string
 }
 
-type UserIdName = Omit<User, 'id' | 'name'>;
+type UserIdName = Omit<User, 'id' | 'name'>
 
 /*
 结果:

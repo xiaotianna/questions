@@ -1142,7 +1142,7 @@ JS 中用 `栈` 的方式来管理执行上下文，遵循“先进后出，后�
 
 :::
 
-### 例 1：
+#### 例 1：
 
 ```js
 // 通过 globalThis 可以获取全局对象（内置的）
@@ -1186,7 +1186,7 @@ fn1.n() // 输出：300，this指向外层，也就是 context 对象
 fn1.k().call(context) // 输出：300，this指向 context 对象
 ```
 
-### 例 2：
+#### 例 2：
 
 ```js
 var name = 'globalName'
@@ -1281,7 +1281,7 @@ person1.foo4()() // 输出：person1，箭头函数this指向外层的this，外
 person1.foo4.call(person2)() // 输出：person2，箭头函数this【继承】外层的this，外层的this通过call指向了person2
 ```
 
-### 例 3：
+#### 例 3：
 
 ```js
 let length = 10
@@ -2456,9 +2456,362 @@ function m() {
 
 ## 问题 47：jwt
 
-JWT（JSON Web Token）,它由三部分组成：头部（header）、负载（payload）和签名（signature）。它是**明文存储**，目的是为了**防篡改**。
+JWT（JSON Web Token）,一个 JWT 由三部分组成，它们之间用点（`.`）分隔，格式为 `Header.Payload.Signature`。
 
-> 签名是服务端根据 header 和 payload + 密钥 + 算法生成的
+### 一、jwt 组成
+
+#### Header（头部）
+
+它包含两部分信息：**令牌的类型**（通常是 JWT）和使用的**签名算法**（也可以包含其他标准字段和自定义字段），例如 HMAC SHA256 或 RSA。示例 JSON 如下：
+
+```json
+{
+  // JWT 头部的alg字段用于指定生成签名所使用的算法，其内容是有预设值的
+  "alg": "HS256",
+  "typ": "JWT"
+}
+```
+
+<u style="background-color: pink;">这个 JSON 会使用 **Base64Url** 编码形成 JWT 的第一部分</u>。
+
+::: details Base64、Base64Url 编码 和 解码
+
+##### 1. Base64 编码
+
+Base64 是一种用 64 个字符来表示任意二进制数据的编码方法，使用字符 A-Z、a-z、0-9、+ 和 / 来表示编码结果，并且使用 = 作为填充字符。
+
+```js
+// 编码
+// 方法1
+Buffer.from(str).toString('base64')
+// 方法2 btoa 用于将 UTF-8 字符串编码为 Base64 字符串
+btoa(str)
+
+// 解码
+// 方法1
+Buffer.from(str, 'base64').toString('utf8')
+// 方法2 atob 用于将 Base64 字符串解码为 UTF-8 字符串
+atob(str)
+```
+
+> `atob` 是 JavaScript 中的一个全局函数，用于对 Base64 编码的字符串进行解码。它接受一个 Base64 编码的字符串作为参数，并返回解码后的原始字符串。
+
+##### 2. Base64Url
+
+因为 URL（base64Url） 中，+、/ 和 = 有特殊含义，可能会导致问题。因此，Base64Url 编码将 + 替换为 -，/ 替换为 \_，并去掉了填充字符 =
+
+> +、/ 和 = 有特殊含义，可能会导致问题是什么？
+>
+> - `+` 字符的问题
+>
+>   在 URL 编码规则里，`+` 通常被用来表示空格。当包含 `+` 的 Base64 编码字符串作为 URL 参数传递时，接收方在解析 URL 时可能会把 `+` 错误地解析成空格。
+>
+> - `/` 字符的问题
+>
+>   `/` 在 URL 中是路径分隔符，用于分隔 URL 的不同路径部分。如果 Base64 编码字符串包含 `/`，会使服务器对 URL 的路径解析产生混淆。
+>
+> - `=`字符的问题
+>
+>   `=` 在 Base64 编码中是填充字符，用于保证编码后的字符串长度是 4 的倍数。但在 URL 参数中，`=` 用于分隔参数名和参数值。如果 Base64 编码字符串包含 `=`，会干扰服务器对 URL 参数的解析。
+
+**编码：**
+
+```js
+function base64UrlEncode(str) {
+  return (
+    btoa(str)
+      // 将 + 替换为 -，将 / 替换为 _，并且去掉尾部的填充字符 =，主要是为了确保编码后的字符串可以安全、无误地在 URL 中使用，
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '')
+  )
+}
+```
+
+**解码：**
+
+在 JavaScript 中，虽然没有直接的 Base64Url 解码函数，但可以通过一些步骤将 Base64Url 编码的字符串转换为原始数据。通常的做法是先将 Base64Url 编码的字符串转换为标准的 Base64 编码字符串，然后再使用标准的 Base64 解码函数进行解码。
+
+转换步骤如下：
+
+1. 将 `-` 替换为 `+`。
+2. 将 `_` 替换为 `/`。
+3. 根据需要添加填充字符 `=`。
+
+```js
+function base64UrlDecode(base64Url) {
+  // 将 Base64Url 转换为标准的 Base64
+  let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+  // 添加填充字符
+  while (base64.length % 4) {
+    base64 += '='
+  }
+  // 使用 atob 进行解码
+  return atob(base64)
+}
+```
+
+:::
+
+#### Payload（负载）
+
+它包含声明（Claims），声明是关于标准字段和自定义字段的声明。标准字段并非强制要求的。
+
+**标准字段：**
+
+- **`iss`（Issuer，发行人）**：标识 JWT 的签发主体，通常是一个 URL 或者一个组织的名称。
+- **`sub`（Subject，主题）**：代表 JWT 所面向的主体，通常是用户的唯一标识符。
+- **`aud`（Audience，受众）**：指明 JWT 的接收方，可能是一个或多个。
+- **`exp`（Expiration Time，过期时间）**：表示 JWT 的过期时间，时间戳格式。
+- **`nbf`（Not Before，生效时间）**：表示 JWT 开始生效的时间，在此之前该 JWT 不可用。
+- **`iat`（Issued At，签发时间）**：记录 JWT 的签发时间。
+- **`jti`（JWT ID，JWT 唯一标识符）**：为 JWT 提供一个唯一的标识符，可用于防止重放攻击。
+
+```json
+{
+  "iss": "https://example.com",
+  "sub": "123456",
+  "aud": ["admin", "user"],
+  "exp": 1695628800,
+  "nbf": 1695625200,
+  "iat": 1695621600,
+  "jti": "abc123def456"
+}
+```
+
+**自定义声明示例：**
+
+```json
+{
+  "userId": "xxxx",
+  "phone": "155xxx"
+}
+```
+
+<u style="background-color: pink;">这个 JSON 会使用 **Base64Url** 编码形成 JWT 的第一部分</u>。
+
+#### Signature（签名）
+
+要创建签名部分，需要使用**编码后的 Header**、**编码后的 Payload**、**一个秘钥（secret）**和**Header 中指定的签名算法**。例如，如果使用的是 HMAC SHA256 算法，签名将按以下方式创建：
+
+```js
+HMACSHA256(base64UrlEncode(header) + '.' + base64UrlEncode(payload), secret)
+```
+
+签名用于验证消息在传递过程中没有被更改，并且在使用私钥签名的情况下，还可以验证 JWT 的发送者的身份。
+
+<u style="background-color: pink;">最终得到的签名也是一个 **Base64Url** 编码的字符串</u>。
+
+::: details 手动生成签名和 jwt
+
+```js
+const crypto = require('crypto')
+
+// Base64Url 编码函数
+function base64UrlEncode(str) {
+  return (
+    Buffer.from(str)
+      .toString('base64')
+      // 将 + 替换为 -，将 / 替换为 _，并且去掉尾部的填充字符 =，主要是为了确保编码后的字符串可以安全、无误地在 URL 中使用，
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '')
+  )
+}
+
+// 生成 JWT 签名的函数
+function generateSignature(header, payload, secret) {
+  // 对头部和负载进行 Base64Url 编码
+  const encodedHeader = base64UrlEncode(JSON.stringify(header))
+  const encodedPayload = base64UrlEncode(JSON.stringify(payload))
+
+  // 拼接编码后的头部和负载
+  const dataToSign = `${encodedHeader}.${encodedPayload}`
+
+  // 使用 HMAC-SHA256 算法生成签名
+  const hmac = crypto.createHmac('sha256', secret)
+  // update：分块添加数据 update 方法接受的参数可以是字符串或 Buffer 对象。如果传递的是字符串，默认使用 UTF-8 编码。
+  // 顺序问题：多次调用 update 方法时，数据的添加顺序很重要，不同的顺序会导致不同的签名结果。
+  hmac.update(dataToSign)
+  // digest：生成 HMAC 签名
+  const signature = hmac.digest('base64')
+
+  // 对签名进行 Base64Url 编码，再一次base64url转换是为了确保签名能够在 URL 中安全、准确地传输和使用
+  const encodedSignature = base64UrlEncode(signature)
+
+  return encodedSignature
+}
+
+// 示例头部
+const header = {
+  alg: 'HS256',
+  typ: 'JWT'
+}
+
+// 示例负载
+const payload = {
+  sub: '1234567890',
+  name: 'John Doe'
+}
+
+// 示例秘钥
+const secret = 'yourSecretKey'
+
+// 生成签名
+const signature = generateSignature(header, payload, secret)
+console.log('生成的签名:', signature)
+
+// 生成完整的 JWT
+const encodedHeader = base64UrlEncode(JSON.stringify(header))
+const encodedPayload = base64UrlEncode(JSON.stringify(payload))
+const jwt = `${encodedHeader}.${encodedPayload}.${signature}`
+console.log('生成的 JWT:', jwt)
+```
+
+生成的结果：
+
+```js
+生成的签名: b3NhYzBXRzk1eG5BSlVFSXVhU3dvWEdVUkIvSW5aQmU2d3FWSmZWU1BVQT0
+生成的 JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.b3NhYzBXRzk1eG5BSlVFSXVhU3dvWEdVUkIvSW5aQmU2d3FWSmZWU1BVQT0
+```
+
+:::
+
+### 二、jwt 目的
+
+主要目的：用于在网络应用环境间传递声明，以一种**安全且可验证**的方式将用户相关信息从服务器传递到客户端，并且可以被客户端在后续请求中携带，以证明用户的身份和权限。
+
+- **身份验证**：在用户登录或进行其他身份验证流程后，服务器会生成一个 JWT 并返回给客户端。客户端在后续的请求中携带这个 JWT，服务器通过验证 JWT 的有效性来确定用户的身份，从而实现对用户的身份验证，判断用户是否有权访问特定的资源或执行特定的操作。
+- **数据传输与共享**：JWT 可以在不同的系统或服务之间安全地传输用户相关的信息或其他业务数据。由于 JWT 是**自包含**的（包含了用户的身份信息和其他必要的数据），因此可以在多个不同的环境中传递和使用，而无需在每个环境中都进行额外的数据查询或交互来获取用户信息，提高了数据传输和共享的效率和便捷性。
+
+> ⚠️ 注意：cookie、session 是解决了请求无状态的问题，而 jwt 本身也是**无状态**的，但它也在一定程度上解决了请求无状态的问题
+>
+> - **无状态特性**：JWT 本身不依赖服务器端存储状态信息。它将用户的身份信息和其他必要的数据编码在 Token 中，服务器在接收到请求时，只需对 JWT 进行解码和验证，就可以获取用户的身份和相关信息，而不需要在服务器端查找和维护额外的状态数据。例如，JWT 的负载部分可以包含用户的 ID、角色等信息，服务器直接从 JWT 中获取这些信息，而无需查询数据库或其他存储。
+> - **解决请求无状态问题**：JWT 通过在请求中携带包含用户信息的 Token，使得服务器能够在不依赖服务器端状态存储的情况下识别用户身份。客户端在登录成功后，服务器生成 JWT 并返回给客户端，客户端在后续的请求中将 JWT 包含在请求头中发送给服务器。服务器接收到请求后，验证 JWT 的有效性，如果验证通过，就可以根据 JWT 中的信息处理请求，实现了对用户身份的识别和状态的跟踪，在一定意义上解决了请求无状态的问题。
+
+### 三、jwt 没有设置过期时间默认是多少？如何验证 jwt 是否过期？如何判断是否被篡改？
+
+#### 问：没有设置过期时间默认是多少？
+
+JWT 默认**没有过期时间**。过期时间（`exp` 声明）是可选的，由开发者在生成 JWT 时根据需求自行设置。如果不设置过期时间，那么这个 JWT 就不会因为时间原因而自动失效，除非使用其他方式（如黑名单机制）来手动使其无效。
+
+过期的时间放在负载中，所以需要验证的时候，需要验证负载中的 `exp` 字段。
+
+```js
+const jwt = require('jsonwebtoken')
+
+// 生成 JWT
+const token = jwt.sign(
+  {
+    phone: '1234567890',
+    WaiFCode: 'ABC123'
+  },
+  'mySign',
+  {
+    expiresIn: 60 * 1 // 过期时间设置为 1 分钟
+  }
+)
+
+// 解码 JWT 查看负载内容
+const decoded = jwt.decode(token)
+/*
+解码后的负载内容: {
+  phone: '1234567890',
+  WaiFCode: 'ABC123',
+  iat: 1745034016, // 签发时间
+  exp: 1745034076 // 过期时间
+}
+*/
+console.log('解码后的负载内容:', decoded)
+```
+
+#### 问：如何验证 jwt 是否过期？
+
+1. **解码 JWT**：`jwt.verify` 方法首先会对传入的 JWT 进行解码，将其**分解为头部、负载和签名**三个部分，并对头部和负载进行 **Base64Url 解码**，得到原始的 JSON 对象。
+
+2. **验证签名**：使用指定的密钥和签名算法（在头部中指定）重新计算签名，并将其与 JWT 中的签名部分进行比较。如果两者不匹配，说明 JWT 可能被篡改，`jwt.verify` 方法会抛出 `JsonWebTokenError` 错误。
+
+3. **验证过期时间**：在解码后的负载中查找 `exp` 声明。如果存在 `exp` 声明，`jwt.verify` 方法会将当前时间（以 Unix 时间戳表示）与 `exp` 声明的值进行比较。如果当前时间超过了 `exp` 声明的值，说明 JWT 已经过期，`jwt.verify` 方法会抛出 `TokenExpiredError` 错误。
+
+4. **返回解码结果**：如果签名验证通过且 JWT 未过期，`jwt.verify` 方法会返回解码后的负载对象，其中包含了用户信息和其他声明。
+
+::: details 示例代码
+
+```js
+function verify(token, secret) {
+  // 解码 JWT
+  const [encodedHeader, encodedPayload, signature] = token.split('.')
+  const header = JSON.parse(atob(encodedHeader))
+  const payload = JSON.parse(atob(encodedPayload))
+
+  // 验证签名
+  const calculatedSignature = calculateSignature(
+    encodedHeader,
+    encodedPayload,
+    secret,
+    header.alg
+  )
+  if (calculatedSignature !== signature) {
+    throw new Error('Invalid signature')
+  }
+
+  // 验证过期时间
+  if (payload.exp) {
+    const currentTime = Math.floor(Date.now() / 1000)
+    if (currentTime > payload.exp) {
+      throw new Error('Token expired')
+    }
+  }
+
+  return payload
+}
+```
+
+:::
+
+#### 问：如何判断是否被篡改？
+
+**1. 解码 JWT**
+
+将接收到的 JWT 按 `.` 分割成三部分，分别得到编码后的头部、负载和签名。然后对头部和负载进行 Base64Url 解码，得到原始的 JSON 对象。
+
+**2. 获取签名算法**
+
+从解码后的头部中获取 `alg` 字段的值，确定使用的签名算法。
+
+**3. 重新生成签名**
+
+使用解码后的头部和负载，按照生成签名的步骤，重新拼接并使用相同的签名算法和密钥生成一个新的签名。
+
+**4. 比较签名**
+
+将重新生成的签名与接收到的 JWT 中的签名进行比较。如果两个签名相同，则说明 JWT 在传输过程中没有被篡改，并且是由持有相同密钥的发送者生成的；如果两个签名不同，则说明 JWT 可能被篡改或不是由合法的发送者生成的。
+
+### 四、在分布式系统中，session 只会保存在一个服务器进程中，而其他的进程却没有保存 session，会导致用户登录状态丢失，那 jwt 是如何解决这个问题的呢？
+
+**状态丢失的原因：**
+
+传统的 Session 机制是有状态的，服务器需要在内存或数据库中保存每个用户的 Session 信息。当用户发起请求时，服务器通过 Session ID 来查找对应的 Session 数据，以验证用户的身份和状态。在分布式系统中，如果用户的请求被分发到不同的服务器节点，而这些节点没有保存该用户的 Session 信息，就会导致用户登录状态丢失。
+
+**jwt 是如何解决的：**
+
+JWT 是无状态的，它将用户的身份信息和其他必要的数据编码在 Token 中。当用户发起请求时，只需将 JWT 发送给服务器，服务器对 JWT 进行解码和验证，即可获取用户的身份信息和状态。这样，**无论用户的请求被分发到哪个服务器节点，只要该节点能够验证 JWT 的有效性，就可以正确处理用户的请求，避免了 Session 不一致的问题**。
+
+### 五、jwt 为什么要在请求头中，不能放在其他位置？
+
+1. 标准化
+   - 遵循 HTTP 标准：将 Token 放在请求头中符合 HTTP 协议的标准做法。HTTP 请求头是设计用来传递元数据的地方，而 Token 本质上是请求的元数据之一。
+   - 易于解析：服务器可以方便地从请求头中提取 Token 进行验证，而不需要解析 URL 或请求体。
+2. 安全性
+   - 防止 CSRF 攻击：将 Token 放在请求头中而不是 URL 中，可以有效防止跨站请求伪造（CSRF）攻击。CSRF 攻击通常通过 URL 参数来传播 Token，而请求头中的 Token 不会被浏览器自动附加到跨域请求中。
+   - 减少泄露风险：Token 放在请求头中不容易被第三方（如其他网站）通过 URL 参数获取，降低了 Token 泄露的风险。 
+3. 方便性
+   - 简化前端实现：前端开发者可以在发送请求时统一设置请求头，而不需要在每个请求中手动附加 Token 到 URL 或请求体中。
+   - 支持多种请求方法：无论是 GET、POST、PUT 还是 DELETE 请求，都可以通过请求头传递 Token，而不需要对不同请求方法进行特殊处理。
+
+### 六、什么是双token机制？
+
+
 
 ## 问题 48：parseFloat 和 Number 的区别
 
@@ -2765,4 +3118,3 @@ console.log(blockVar) // 输出 '这是块内变量'，因为 var 没有块级�
 4. **重复声明**：在同一作用域内，let 和 const 不允许重复声明，var 允许重复声明。
 
 > let、const 与 var 的区别是一致的，let 是声明变量，而 const 是声明常量
-
