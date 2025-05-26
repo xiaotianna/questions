@@ -27,6 +27,8 @@ features:
       link: /性能优化/
     - title: 项目
       link: /项目/实习项目/移动端上拉加载、下拉刷新实现方案
+    - title: 场景题
+      link: /场景题/
     - title: 算法
       link: /算法/数据结构/
     - title: Git
