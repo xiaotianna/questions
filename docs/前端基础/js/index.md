@@ -3225,4 +3225,15 @@ console.log(blockVar) // 输出 '这是块内变量'，因为 var 没有块级�
 
 ## 问题 56：innerHTML
 
-innerHTML 设置 script 标签，不会执行里面的 js 代码。
+innerHTML 设置的 script 标签，浏览器出于安全考虑，不会执行里面的 js 代码。
+
+## 问题 57：如何判断元素在视口？
+
+1. `getBoundingClientRect()`
+2. 根据滚动条的位置判断
+3. `IntersectionObserver` API
+
+> - 兼容性问题
+> - **精度限制**：IntersectionObserver 的默认精度可能无法满足某些对精度要求极高的场景。
+> - **无法观察动态变化**：如果被观察元素的大小、位置或其他属性在运行时发生动态变化，IntersectionObserver 可能无法及时准确地反映这些变化。
+> - 快速滚动检测不到
