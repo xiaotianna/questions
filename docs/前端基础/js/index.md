@@ -357,17 +357,120 @@ undefined + 2 // NaN
   - Null（空）：表示一个空值或没有值的对象。
   - Undefined（未定义）：表示一个未被赋值的变量的值。
   - Symbol（符号）：表示唯一的标识符。
+  - BigInt（大整数）：表示大于 2 的 53 位的整数，结尾用 `n` 表示。
 
 - **复杂数据类型（也被称为引用类型）**：
 
   - Object（对象）：表示复杂数据结构，可以包含键值对的集合。
   - Array（数组）：表示有序的集合，可以包含任意类型的数据。
   - Function（函数）：表示可执行的代码块。
+  - Map（映射）：表示键值对集合，键可以是任何类型的值，值可以是任何类型的值。
+  - Set（集合）：表示不重复的元素集合，可以包含任何类型的值。
+  - WeakMap（弱映射）：是一种特殊的 Map，它的键必须是 `对象（Object）`或 `Symbol`，值可以是任何类型的值
+  - WeakSet（弱集合）：是一种特殊的 Set，`WeakSet` 的成员只能是 `对象（Object）`或 `Symbol`
 
-- **BigInt 数据类型**（在 ECMAScript 2020（ES11）规范中正式被添加）：
+    > ⚠️ 注意：
+    >
+    > - 这里的`对象（Object）`指的是引用类型
+    > - `WeakMap` 和 `WeakSet` 都是弱引用，不会阻止垃圾回收器回收这些对象
+    > - API 和 各自对应的 `Map` 和 `Set` 的 API 是相同的
+    > - 但是 `WeakMap` 和 `WeakSet` 不支持迭代，所以没有 `forEach`, `values`, `keys`, `entries` 方法。
 
-  - 用于对“大整数”的表示和操作。
-  - 结尾用 `n` 表示：例如 `100000n / 200n`。
+  ::: details ⛽️ 补充：什么是强引用和弱引用？
+
+  弱引用是不能确保其引用的对象不会被垃圾回收器回收的引用，而强引用是确保其引用的对象不会被垃圾回收器回收的引用。
+
+  也就是说，JavaScript 引擎在执行代码时，对象通过变量直接赋值形成的引用会被视为强引用，垃圾回收器就不会回收这类对象；通过 `WeakMap` 和 `WeakSet` 建立的引用会被视为弱引用，**弱引用不影响垃圾回收**。
+
+  当一个变量被设置为 `null` 时，会断开该变量与原对象间的引用，该对象就会变成垃圾回收器的回收目标。
+
+  > 如果当我们不再需要这个原对象时，我们必须手动的删除这个引用（赋值为 `null`），解除引用这个原对象和原对象的引用关系，否则垃圾回收机制不会释放原对象占用的内存。
+  >
+  > 也就是当我们不需要 person 时，需要将 person 设置为 null，才会解除与 person1 的引用关系，否则没有办法被垃圾回收机制回收。
+  >
+  > ```js
+  > const person = { name: '张三' }
+  > const person1 = [person]
+  > person = null
+  > ```
+
+  例如：强引用
+
+  ```js
+  let person = { name: '张三' }
+  const person1 = [person]
+  person = null
+  console.log(person1) // [ { name: '张三' } ]
+  ```
+
+  > 创建一个叫 person 的对象，并将该对象存储到 person1 中；然后将 person 设置为 null，断开引用，但是因为变量 person1 存在对 person 对象的强引用，所以该对象不会被垃圾回收器给盯上。
+
+  例如：弱引用
+
+  ```js
+  let person = { name: '张三' }
+  let person2 = new WeakMap()
+  person2.set(person, '张三')
+  person = null
+  // 等待垃圾回收后
+  console.log(person2, person2.get(mpPerson)) // WeakMap {{…}} => '张三'}   undefined
+  ```
+
+  > 创建一个 weakMap 对象 person1 和一个对象 person，并且将该对象作为键，键值为"张三"添加到 person1 中；然后将变量 person 设置为 null，断开了变量与对象的引用，然而 person1 对 person 是弱引用，所以垃圾回收器可以回收 person 对象。
+
+  :::
+
+  ::: tip WeakMap 使用场景
+
+  1. DOM 元素附加数据（避免内存泄漏）：因为 weakMap 不会影响垃圾回收，所以可以用来关联元数据
+
+     ```js
+     const wm = new WeakMap()
+     const loginBtn = document.getElementById('loginBtn')
+     wm.set(loginBtn, { disabled: true })
+     ```
+
+     > 如何使用 `Map`，当 DOM 元素被删除时，仍然保存着对按钮的引用，会引起内存泄漏，而 `WeakMap` 避免了这种情况。
+
+  2. 私有属性封装
+
+    假设外部在使用的时候，只能 `new` 这个类，`_privateData` 没有被导出，就做到了私有化属性。
+
+     ```js
+     const _privateData = new WeakMap()
+     class MyClass {
+       constructor(data) {
+         _privateData.set(this, { secret: data })
+       }
+
+       getSecret() {
+         return _privateData.get(this).secret
+       }
+     }
+
+     const instance = new MyClass('敏感数据')
+     console.log(instance.getSecret()) // 输出 "敏感数据"
+
+     // 外部无法直接访问 instance.secret
+     // 这种情况还是可以访问到：_privateData.get(instance).secret
+     ```
+
+  3. 数据缓存：当我们需要在不修改原有对象的情况下储存某些属性等，而又不想管理这些数据时，可以使用 WeakMap
+
+  ```js
+  const cache = new WeakMap()
+  function cacheData(obj, key, value) {
+    if (cache.has(obj)) {
+      return cache.get(obj)
+    } else {
+      const count = Object.keys(cache).length
+      cache.set(obj, count)
+      return count
+    }
+  }
+  ```
+
+  :::
 
 - **存储方式**：
   - 基础类型存放于栈，变量记录原始值。
@@ -2882,11 +2985,11 @@ JWT 是无状态的，它将用户的身份信息和其他必要的数据编码�
 
 #### 工作模式
 
-分为两种：1、session + cookie；2、token；3、双token模式
+分为两种：1、session + cookie；2、token；3、双 token 模式
 
 ##### 1. session + cookie
 
-认证中心去维护一个session表
+认证中心去维护一个 session 表
 
 ![](./img/cookie+session.png)
 
@@ -2904,18 +3007,18 @@ JWT 是无状态的，它将用户的身份信息和其他必要的数据编码�
 
 ![](./img/token.png)
 
-用户登录由认证中心颁发token，认证中心不会存储token信息，子系统应用时可以自己去判断token（可以认证中心和子系统去共享一个密钥）
+用户登录由认证中心颁发 token，认证中心不会存储 token 信息，子系统应用时可以自己去判断 token（可以认证中心和子系统去共享一个密钥）
 
 ##### 3. 双 token
 
-双token解决了token无法对用户控制的缺点
+双 token 解决了 token 无法对用户控制的缺点
 
 ![](./img/双token.png)
 
-- token为短token
-- refresh token为刷新token（长token）
+- token 为短 token
+- refresh token 为刷新 token（长 token）
 
-子系统只需要去验证短token，如果短token过期（图右），会拿这个刷新token去认证中心换新的短token
+子系统只需要去验证短 token，如果短 token 过期（图右），会拿这个刷新 token 去认证中心换新的短 token
 
 ## 问题 48：parseFloat 和 Number 的区别
 
@@ -3237,3 +3340,53 @@ innerHTML 设置的 script 标签，浏览器出于安全考虑，不会执行�
 > - **精度限制**：IntersectionObserver 的默认精度可能无法满足某些对精度要求极高的场景。
 > - **无法观察动态变化**：如果被观察元素的大小、位置或其他属性在运行时发生动态变化，IntersectionObserver 可能无法及时准确地反映这些变化。
 > - 快速滚动检测不到
+
+## 问题 58：如何实现私有属性？
+
+> 这道题是当前腾讯 wxg 二面原题，当时只说到了 es6 的 class 的 `private` 属性。后面被追问到 es5 如何实现的
+
+**1. ES6 class 的 `private` 属性**
+
+> ⚠️ 注意：这个 `private` 属性，只是在 `ts` 中使用，在 `js` 中是不支持的
+
+**2. 使用 ES6 类的私有字段（#）**
+
+在类中使用 `#` 前缀声明私有字段，确保外部无法直接访问。
+
+```js
+class MyClass {
+  #privateField = '私有属性'
+
+  getPrivateField() {
+    return this.#privateField
+  }
+}
+
+const instance = new MyClass()
+console.log(instance.getPrivateField()) // 输出: 私有属性
+console.log(instance.#privateField) // 报错：SyntaxError: Private field '#privateField' must be declared in an enclosing class
+```
+
+**3. 闭包（es5 的实现）**
+
+利用闭包特性，在构造函数内部定义变量，外部无法访问。
+
+```js
+function MyClass() {
+  const privateField = '私有属性'
+
+  this.getPrivateField = function () {
+    return privateField
+  }
+}
+
+const instance = new MyClass()
+console.log(instance.getPrivateField()) // 输出: 私有属性
+console.log(instance.privateField) // 输出: undefined（外部无法直接访问）
+```
+
+## 问题 59：js 中的 requestAnimationFrame 是宏任务还是微任务？
+
+`requestAnimationFrame` 既不是宏任务，也不是微任务，它是浏览器在每次重绘之前自动调度的一种特殊任务类型。
+
+> 宏任务（Macro Task）：包括 `setTimeout`、`setInterval`、`DOM 事件`、`I/O 操作` 等。现在没有宏任务的说法了，定时器是延时队列的。

@@ -85,11 +85,11 @@ return <Preview content={deferredContent} />
 
 ::: details useDeferredValue 和 useTransition 的区别
 
-### useDeferredValue
+#### useDeferredValue
 
 `useDeferredValue` 用于<u>延迟某些状态的更新</u>，直到主渲染任务完成。这对于高频更新的内容(如输入框、滚动等)非常有用，可以让 U 更加流畅，避免由于频繁更新而导致的性能问题。
 
-### useTransition
+#### useTransition
 
 `useTransition` 可以将一个更新转为低优先级更新，使其可以被打断，不阻塞 ui 对用户操作的响应，能够提高用户的使用体验，它常用于优化视图切换时的用户体验。
 

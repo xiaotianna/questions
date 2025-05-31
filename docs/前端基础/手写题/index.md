@@ -117,7 +117,7 @@ function myInstanceof(obj, constructor) {
     return false
   }
 
-  // 获取构造函数的原型对象 obj.__proto__
+  // 获取构造函数的原型对象 let proto = obj.__proto__
   let proto = Object.getPrototypeOf(obj)
 
   // 检查构造函数的原型链是否包含给定的构造函数的原型
