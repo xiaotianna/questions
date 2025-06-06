@@ -175,3 +175,43 @@ type TokensTypes = {
  */
 type TokensTypes = Record<K, V>
 ```
+
+## 装饰器
+
+这里主要了解装饰器执行顺序：先会从上到下全部的执行装饰器工厂，然后获取到“真正的”装饰器后，从下到上执行装饰器
+
+```ts
+function factoryA<T extends { new (...args: any[]): {} }>(target: T) {
+  console.log('factoryA')
+}
+function factoryB(name: string) {
+  console.log('factoryB')
+  return function <T extends { new (...args: any[]): {} }>(target: T) {
+    console.log('factoryB 内部')
+  }
+}
+function factoryC(name: string) {
+  console.log('factoryC')
+  return function <T extends { new (...args: any[]): {} }>(target: T) {
+    console.log('factoryC 内部')
+  }
+}
+function factoryD<T extends { new (...args: any[]): {} }>(target: T) {
+  console.log('factoryD')
+}
+
+@factoryA
+@factoryB('B')
+@factoryC('C')
+@factoryD
+class MyClass {}
+/**
+ * 输出结果为：
+ * factoryB
+ * factoryC
+ * factoryD
+ * factoryC 内部
+ * factoryB 内部
+ * factoryA
+ */
+```
