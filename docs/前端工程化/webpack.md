@@ -61,20 +61,6 @@ webpack 构建流程是一个 `串行` 的过程。
 - loader 运行在打包文件之前上
 - plugins 在整个编译周期都起作用
 
-## compiler 和 compilation 的区别
-
-- Compiler（提供 webpack 的钩子）：compiler 对象中保存着完整的 Webpack 环境配置，每次启动 webpack 构建时它都是一个独一无二，仅仅会创建一次的对象。
-
-  这个对象会在首次启动 Webpack 时创建，我们可以通过 compiler 对象上访问到 Webapck 的主环境配置，比如 loader 、 plugin 等等配置信息。
-
-- Compilation（对资源的处理）：compilation 对象代表一次资源的构建，compilation 实例能够访问所有的模块和它们的依赖。
-
-<img src='./img/webpack运行流程.png' alt='webpack运行流程' style='zoom: 50%' />
-
-> Compiler：只会创建一次
->
-> Compilation：会创建多次
-
 ## webpack 事件机制
 
 Webpack 的事件机制的核心是插件系统，通过丰富的钩子和插件机制，开发者可以在编译的不同阶段插入自定义逻辑，从而实现高度定制化的构建流程。
@@ -90,6 +76,54 @@ Webpack 的事件机制的核心是插件系统，通过丰富的钩子和插件
 - emit：输出文件之前触发，用于修改输出文件或生成一些附加文件
 - after-emit：输出文件之后触发，可以用于清理临时文件或资源
 - done：编译完成时触发，可以用于生成构建报告
+
+## webpack 怎么知道哪个 plugin 在哪个生命周期使用？
+
+Webpack 通过**插件系统与编译生命周期的钩子机制**来决定哪个 plugin 在哪个生命周期使用。每个插件在 Webpack 编译过程中会监听特定的事件钩子，并在对应的编译阶段执行相应的逻辑。
+
+- 插件主动监听钩子：每个插件都会在自己的 `apply()` 方法中，监听 Webpack 生命周期的钩子。
+- Webpack 主动触发钩子：在构建的不同阶段，Webpack 主动触发相应的钩子。
+- 插件响应钩子事件：当钩子被触发时，所有监听该钩子的插件就会执行各自的逻辑。
+
+> 💡 类比理解：可以将 Webpack 的钩子机制理解为“事件总线”：
+> 
+> - Webpack 在不同阶段广播事件（如 done, emit）。
+> - 插件就像订阅者，提前订阅感兴趣的事件。
+> - 当事件发生时，订阅者自动收到通知并执行相应处理。
+
+::: details compiler 和 compilation 的区别
+
+- Compiler（提供 webpack 的钩子）：compiler 对象中保存着完整的 Webpack 环境配置，每次启动 webpack 构建时它都是一个独一无二，仅仅会创建一次的对象。
+
+  这个对象会在首次启动 Webpack 时创建，我们可以通过 compiler 对象上访问到 Webapck 的主环境配置，比如 loader 、 plugin 等等配置信息。
+
+- Compilation（对资源的处理）：compilation 对象代表一次资源的构建（如开发模式下的热更新也会创建新的 Compilation），compilation 实例能够访问所有的模块和它们的依赖。
+
+> Compiler：只会创建一次
+>
+> Compilation：会创建多次
+
+:::
+
+❓ 插件如何绑定到生命周期？
+
+插件通过访问 `compiler.hooks.xxx.tap()` 或 `compilation.hooks.xxx.tap()` 来绑定到某个生命周期钩子上。例如：
+
+```js
+class MyPlugin {
+  apply(compiler) {
+    // 监听 done 钩子，在构建完成后执行
+    compiler.hooks.done.tap('MyPlugin', (stats) => {
+      console.log('Webpack 构建完成')
+    })
+
+    // 监听 emit 钩子，在输出文件前执行
+    compiler.hooks.emit.tap('MyPlugin', (compilation) => {
+      console.log('即将输出文件')
+    })
+  }
+}
+```
 
 ## 使用 webpack 时，用过哪些可以提高效率的插件？
 
@@ -152,10 +186,10 @@ modeule.exports = {
 
 ![webpack-hmr](./img/webpack-hmr.png)
 
-1. **监控文件变化**：Webpack的开发服务器会监控项目中所有的模块文件，包括：JS文件、CSS文件、模板文件等。
-2. **模块热替换**：当你在代码中做出更改并保存时，Webpack检测到文件变化，会首先通过热替换插件（Hot Module Replacement Plugin）生成新的模块代码。
+1. **监控文件变化**：Webpack 的开发服务器会监控项目中所有的模块文件，包括：JS 文件、CSS 文件、模板文件等。
+2. **模块热替换**：当你在代码中做出更改并保存时，Webpack 检测到文件变化，会首先通过热替换插件（Hot Module Replacement Plugin）生成新的模块代码。
 3. **构建更新的模块**：生成的新模块代码会被构建成一个独立的文件或数据块。
-4. **通知客户端**：Webpack开发服务器会将更新的模块代码的信息发送到浏览器。
+4. **通知客户端**：Webpack 开发服务器会将更新的模块代码的信息发送到浏览器。
 5. **浏览器端处理**：浏览器接收到更新的模块信息后，会在不刷新页面的情况下通过热替换运行时（Hot Module Replacement Runtime）替换相应的模块。
 6. **应用程序状态保持**：热更新还可以保持应用程序的状态。当修改代码不会丢失已有的数据、用户登录状态等。
 7. **回调处理**：允许在模块更新时执行自定义的回调函数，可以处理特定的逻辑，以确保模块更新后的正确性。

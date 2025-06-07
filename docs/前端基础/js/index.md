@@ -434,26 +434,26 @@ undefined + 2 // NaN
 
   2. 私有属性封装
 
-    假设外部在使用的时候，只能 `new` 这个类，`_privateData` 没有被导出，就做到了私有化属性。
+  假设外部在使用的时候，只能 `new` 这个类，`_privateData` 没有被导出，就做到了私有化属性。
 
-     ```js
-     const _privateData = new WeakMap()
-     class MyClass {
-       constructor(data) {
-         _privateData.set(this, { secret: data })
-       }
+  ```js
+  const _privateData = new WeakMap()
+  class MyClass {
+    constructor(data) {
+      _privateData.set(this, { secret: data })
+    }
 
-       getSecret() {
-         return _privateData.get(this).secret
-       }
-     }
+    getSecret() {
+      return _privateData.get(this).secret
+    }
+  }
 
-     const instance = new MyClass('敏感数据')
-     console.log(instance.getSecret()) // 输出 "敏感数据"
+  const instance = new MyClass('敏感数据')
+  console.log(instance.getSecret()) // 输出 "敏感数据"
 
-     // 外部无法直接访问 instance.secret
-     // 这种情况还是可以访问到：_privateData.get(instance).secret
-     ```
+  // 外部无法直接访问 instance.secret
+  // 这种情况还是可以访问到：_privateData.get(instance).secret
+  ```
 
   3. 数据缓存：当我们需要在不修改原有对象的情况下储存某些属性等，而又不想管理这些数据时，可以使用 WeakMap
 
@@ -3390,3 +3390,7 @@ console.log(instance.privateField) // 输出: undefined（外部无法直接访�
 `requestAnimationFrame` 既不是宏任务，也不是微任务，它是浏览器在每次重绘之前自动调度的一种特殊任务类型。
 
 > 宏任务（Macro Task）：包括 `setTimeout`、`setInterval`、`DOM 事件`、`I/O 操作` 等。现在没有宏任务的说法了，定时器是延时队列的。
+
+## 问题 60：为什么使用 `<script>` 标签引入外部的 js 不需要配置跨域？
+
+因为浏览器对 `<script>` 标签的加载行为是 不受同源策略限制的，是浏览器**为了实现网页动态加载 JS 脚本的功能**。**这种机制的设计是为了支持一些关键功能，比如 CDN 加速、第三方库和广告脚本的加载**。
