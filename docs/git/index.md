@@ -11,6 +11,9 @@
 7. `git clone -b <分支名> <仓库url>` 克隆指定分支代码
 8. `git pull` 将远程仓库更新到本地仓库
 9. `git checkout <分支名>` 切换分支
+    > `git checkout -b <新分支名>` 创建并切换分支
+    >
+    > `git checkout -b <新分支名> <旧分支名>` 创建新分支，并从旧分支创建并切换到新分支
 10. `git branch` 查看分支
 11. `git branch -a` 查看所有分支
 12. `git branch <分支名>` 创建分支
