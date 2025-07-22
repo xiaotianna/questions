@@ -201,6 +201,7 @@ export const sidebar = {
         { text: '哈希表', link: '/算法/哈希表' },
         { text: '字符串', link: '/算法/字符串' },
         { text: '链表', link: '/算法/链表' },
+        { text: '栈与队列', link: '/算法/栈与队列' },
       ]
     }
   ],
