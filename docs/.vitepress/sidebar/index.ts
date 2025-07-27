@@ -191,7 +191,7 @@ export const sidebar = {
   '/算法/': [
     {
       items: [
-        { text: '数据结构', link: '/算法/数据结构/' },
+        { text: '归纳', link: '/算法/' },
         { text: '时间复杂度和空间复杂度', link: '/算法/时间复杂度和空间复杂度' },
         { text: '算法题', link: '/算法/算法题/' },
       ]
@@ -200,6 +200,7 @@ export const sidebar = {
       items: [
         { text: '哈希表', link: '/算法/哈希表' },
         { text: '字符串', link: '/算法/字符串' },
+        { text: '数组', link: '/算法/数组' },
         { text: '链表', link: '/算法/链表' },
         { text: '栈与队列', link: '/算法/栈与队列' },
       ]

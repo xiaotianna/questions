@@ -30,7 +30,7 @@ features:
     - title: 场景题
       link: /场景题/
     - title: 算法
-      link: /算法/数据结构/
+      link: /算法/
     - title: Git
       link: /git/
     - title: 面经
