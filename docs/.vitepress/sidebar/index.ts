@@ -191,7 +191,7 @@ export const sidebar = {
   '/算法/': [
     {
       items: [
-        { text: '归纳', link: '/算法/' },
+        { text: '总汇', link: '/算法/' },
         { text: '时间复杂度和空间复杂度', link: '/算法/时间复杂度和空间复杂度' },
         { text: '算法题', link: '/算法/算法题/' },
       ]
