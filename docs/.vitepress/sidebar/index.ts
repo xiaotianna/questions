@@ -203,6 +203,7 @@ export const sidebar = {
         { text: '数组', link: '/算法/数组' },
         { text: '链表', link: '/算法/链表' },
         { text: '栈与队列', link: '/算法/栈与队列' },
+        { text: '单调栈', link: '/算法/单调栈' },
       ]
     }
   ],
