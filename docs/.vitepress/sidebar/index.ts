@@ -193,7 +193,7 @@ export const sidebar = {
       items: [
         { text: '总汇', link: '/算法/' },
         { text: '时间复杂度和空间复杂度', link: '/算法/时间复杂度和空间复杂度' },
-        { text: '算法题', link: '/算法/算法题/' },
+        { text: '排序算法', link: '/算法/排序算法' },
       ]
     },
     {
@@ -204,6 +204,9 @@ export const sidebar = {
         { text: '链表', link: '/算法/链表' },
         { text: '栈与队列', link: '/算法/栈与队列' },
         { text: '单调栈', link: '/算法/单调栈' },
+        { text: '双指针', link: '/算法/双指针' },
+        { text: '二分法', link: '/算法/二分法' },
+        { text: '二叉树', link: '/算法/二叉树' },
       ]
     }
   ],
