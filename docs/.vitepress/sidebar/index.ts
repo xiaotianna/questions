@@ -210,6 +210,7 @@ export const sidebar = {
         { text: '二叉树基础知识', link: '/算法/二叉树基础知识' },
         { text: '二叉树', link: '/算法/二叉树' },
         { text: '回溯', link: '/算法/回溯' },
+        { text: '贪心', link: '/算法/贪心' },
       ]
     }
   ],
