@@ -87,10 +87,6 @@ export const sidebar = {
           link: '/项目/实习项目/移动端上拉加载、下拉刷新实现方案'
         },
         { text: '微前端', link: '/项目/实习项目/微前端' },
-        {
-          text: 'echarts地图离线访问',
-          link: '/项目/实习项目/echarts地图离线访问'
-        },
         { text: 'monorepo路径插件', link: '/项目/实习项目/monorepo路径插件' }
       ]
     },
@@ -247,6 +243,10 @@ export const sidebar = {
     {
       text: 'csig一面面经',
       link: '/面经/csig一面面经'
+    },
+    {
+      text: 'csig二面面经',
+      link: '/面经/csig二面面经'
     }
   ]
 }
