@@ -35,4 +35,6 @@ features:
       link: /git/
     - title: 面经
       link: /面经/
+    - title: AI
+      link: /ai/
 ---

@@ -188,9 +188,12 @@ export const sidebar = {
     {
       items: [
         { text: '总汇', link: '/算法/' },
-        { text: '时间复杂度和空间复杂度', link: '/算法/时间复杂度和空间复杂度' },
+        {
+          text: '时间复杂度和空间复杂度',
+          link: '/算法/时间复杂度和空间复杂度'
+        },
         { text: '排序算法', link: '/算法/排序算法' },
-        { text: '深度优先和广度优先', link: '/算法/深度优先和广度优先' },
+        { text: '深度优先和广度优先', link: '/算法/深度优先和广度优先' }
       ]
     },
     {
@@ -207,7 +210,7 @@ export const sidebar = {
         { text: '二叉树', link: '/算法/二叉树' },
         { text: '回溯', link: '/算法/回溯' },
         { text: '贪心', link: '/算法/贪心' },
-        { text: '动态规划', link: '/算法/动态规划' },
+        { text: '动态规划', link: '/算法/动态规划' }
       ]
     }
   ],
@@ -248,6 +251,16 @@ export const sidebar = {
     {
       text: 'csig二面面经',
       link: '/面经/csig二面面经'
+    }
+  ],
+  '/ai/': [
+    {
+      text: 'AI基础概念',
+      link: '/ai/'
+    },
+    {
+      text: 'AI相关面试题',
+      link: '/ai/面试题'
     }
   ]
 }
