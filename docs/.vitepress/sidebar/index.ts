@@ -61,8 +61,7 @@ export const sidebar = {
     {
       text: '性能优化',
       items: [
-        { text: '目录', link: '/性能优化/' },
-        { text: '性能优化概括', link: '/性能优化/性能优化概括' },
+        { text: '性能优化概括', link: '/性能优化/' },
         { text: '性能优化指标', link: '/性能优化/性能优化指标' },
         { text: '首屏加载优化', link: '/性能优化/首屏加载优化' },
         { text: '懒加载', link: '/性能优化/懒加载' },
@@ -74,7 +73,8 @@ export const sidebar = {
           text: '页面请求接口大规模并发问题',
           link: '/性能优化/页面请求接口大规模并发问题'
         },
-        { text: '缓存', link: '/性能优化/缓存' }
+        { text: '缓存', link: '/性能优化/缓存' },
+        { text: '数据埋点', link: '/性能优化/数据埋点' },
       ]
     }
   ],
@@ -139,6 +139,10 @@ export const sidebar = {
           link: '/项目/个人项目/im项目为什么选择socket.io'
         },
         { text: '大文件上传', link: '/项目/个人项目/大文件上传' },
+        {
+          text: '扫码登录',
+          link: '/项目/个人项目/扫码登录'
+        },
         {
           text: 'electron兼容性处理',
           link: '/项目/个人项目/electron兼容性处理'
