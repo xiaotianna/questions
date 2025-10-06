@@ -22,18 +22,18 @@ interface Func {
 
 // 类
 interface Cls {
-    time: number
+  time: number
 }
 class Time implements Cls {
-    time: number
-    constructor(time: number) {}
+  time: number
+  constructor(time: number) {}
 }
 ```
 
-> ⚠️注意：
+> ⚠️ 注意：
 >
-> - 类与类，接口与接口之间使用extends
-> - 类与接口，使用implements
+> - 类与类，接口与接口之间使用 extends
+> - 类与接口，使用 implements
 
 ## type 类型别名
 
@@ -215,3 +215,28 @@ class MyClass {}
  * factoryA
  */
 ```
+
+## 问题 1：interface 和 type 的区别
+
+在 TypeScript 中，`interface` 和 `type` 都用于描述类型，但它们在功能和使用场景上有一些重要区别：
+
+1. **定义方式**
+
+   - `interface` 只能定义对象类型或类的接口
+   - `type` 可以定义任何类型（包括基本类型、联合类型、交叉类型等）
+
+2. **扩展方式**
+
+   - `interface` 使用 `extends` 关键字扩展
+   - `type` 通过交叉类型（`&`）实现类似扩展的功能
+
+3. **合并特性**
+
+   - `interface` 支持声明合并（多次定义同一接口会自动合并）
+   - `type` 不支持合并，重复定义会报错
+
+4. **适用场景**
+   - `interface` 更适合定义对象的结构，尤其是在面向对象编程中定义类的接口
+   - `type` 更适合定义复杂类型组合、联合类型、工具类型等
+
+总的来说，`interface` 更注重对象结构的定义和扩展，而 `type` 更为灵活，能够定义各种类型组合。

@@ -86,8 +86,7 @@ export const sidebar = {
           text: '移动端上拉加载、下拉刷新实现方案',
           link: '/项目/实习项目/移动端上拉加载、下拉刷新实现方案'
         },
-        { text: '微前端', link: '/项目/实习项目/微前端' },
-        { text: 'monorepo路径插件', link: '/项目/实习项目/monorepo路径插件' }
+        { text: '微前端', link: '/项目/实习项目/微前端' }
       ]
     },
     {
