@@ -52,15 +52,109 @@
 6. **Fragment**：
    - Vue 3 允许多个根节点（Fragment），这使得组件模板可以有多个并列的根元素。
    - Vue 2 要求每个组件必须有一个单独的根节点。
-7. **虚拟节点静态标记（Patch Flag）**：
-   - Vue 2 在更新组件时，会进行相对全面的虚拟 DOM 比较，这可能会导致性能开销。
-   - Vue 3 引入了 Patch Flag，这是一种优化技术，它在编译时标记虚拟节点的动态部分。这样在组件更新时，Vue 只需要关注这些被标记的部分，而不是整个组件树，从而显著提升了性能。
-8. **生命周期变化**：
+7. **生命周期变化**：
    - Vue 2 提供了一系列的生命周期钩子，如 `created`，`mounted`，`updated`，`destroyed` 等。
    - Vue 3 对这些生命周期钩子进行了重命名和调整，以更好地与 Composition API 配合。例如，`beforeDestroy` 和 `destroyed` 分别更名为 `beforeUnmount` 和 `unmounted`。此外，Vue 3 引入了新的生命周期钩子，如 `onMounted`，`onUpdated`，`onUnmounted` 等，用于组合式 API。
-9. **打包体积优化**：
+8. **打包体积优化**：
    - Vue 2 的打包体积相对较大，尤其是在包含了全框架的所有特性时。
    - Vue 3 进行了大量的打包体积优化。它采用了更有效的树摇（Tree - shaking）机制，允许去除未使用的代码部分。这意味着如果你只使用 Vue 的一部分功能，最终打包出来的文件会更小。
+9. **模版编译优化：**：
+
+   1. 虚拟节点**静态标记（Patch Flag）**：更新类型标记，去标注要变化什么
+
+      - Vue 2 在更新组件时，会进行相对全面的虚拟 DOM 比较，这可能会导致性能开销。
+      - Vue 3 引入了 Patch Flag，这是一种优化技术，它在编译时标记虚拟节点的动态部分。这样在组件更新时，Vue 只需要关注这些被标记的部分，而不是整个组件树，从而显著提升了性能。
+
+      对于单个有动态绑定的元素来说，我们可以在编译时推断出大量信息：
+
+      ```html
+      <!-- 仅含 class 绑定 -->
+      <div :class="{ active }"></div>
+      <!-- 仅含 id 和 value 绑定 -->
+      <input :id="id" :value="value">
+      <!-- 仅含文本子节点 -->
+      <div>{{ dynamic }}</div>
+      ```
+
+      在为这些元素生成渲染函数时，Vue 在 vnode 创建调用中直接编码了每个元素所需的更新类型：
+
+      ```js
+      createElementVNode("div", {
+        class: _normalizeClass({ active: _ctx.active })
+      }, null, 2 /* CLASS */)
+      ```
+
+      最后这个参数 `2` 就是一个**更新类型标记 (patch flag)**。一个元素可以有多个更新类型标记，会被合并成一个数字。运行时渲染器也将会使用**位运算**来检查这些标记，确定相应的更新操作：
+
+      ```js
+      if (vnode.patchFlag & PatchFlags.CLASS /* 2 */) {
+        // 更新节点的 CSS class
+      }
+      ```
+
+      > 内容在官网中有详细介绍：https://cn.vuejs.org/guide/extras/rendering-mechanism.html#patch-flags
+
+   2. **缓存静态内容**：
+
+   ```html
+   <div>
+     <!-- 需缓存 -->
+     <div>foo</div>
+     <!-- 需缓存 -->
+     <div>bar</div>
+     <div>{{ dynamic }}</div>
+   </div>
+   ```
+
+   > `foo` 和 `bar` 这两个 div 是完全静态的，会完全跳过对它们的差异比对。
+
+   3. **预字符串化**：当有足够多**连续的静态元素**时，它们还会再被压缩为一个“静态 vnode”，其中包含的是这些节点相应的纯 HTML 字符串。
+
+   > 会把静态内容提前转换成字符串。
+
+   ::: code-group
+
+   ```html [模版]
+   <div>
+     <div class="foo">foo</div>
+     <div class="foo">foo</div>
+     <div class="foo">foo</div>
+     <div class="foo">foo</div>
+     <div class="foo">foo</div>
+     <div>{{ dynamic }}</div>
+   </div>
+   ```
+
+   ```js [vnode] {15}
+   import {
+     createElementVNode as _createElementVNode,
+     toDisplayString as _toDisplayString,
+     createStaticVNode as _createStaticVNode,
+     openBlock as _openBlock,
+     createElementBlock as _createElementBlock
+   } from 'vue'
+
+   export function render(_ctx, _cache, $props, $setup, $data, $options) {
+     return (
+       _openBlock(),
+       _createElementBlock('div', null, [
+         _cache[0] ||
+           (_cache[0] = _createStaticVNode(
+             '<div class="foo">foo</div><div class="foo">foo</div><div class="foo">foo</div><div class="foo">foo</div><div class="foo">foo</div>',
+             5
+           )),
+         _createElementVNode(
+           'div',
+           null,
+           _toDisplayString(_ctx.dynamic),
+           1 /* TEXT */
+         )
+       ])
+     )
+   }
+   ```
+
+   :::
 
 ## 问题 4：vue 生命周期
 
@@ -297,7 +391,7 @@ computed: {
 > “模版解包”：在模板里使用 ref 时，会自动进行解包操作，也就是可以直接使用 ref 对象的值，无需额外调用 .value。但是在编译的时候会自动添加上 `.value`。
 
 > reactive 相比 ref 更难实现模板解包的原因：
-> 
+>
 > - ref 是一个包装对象，它只有一个 .value 属性来存储实际的值。这种简单的结构使得在模板解包时，Vue 可以很容易地识别并直接访问 .value 属性，模板中进行解包时不存在歧义。
 > - reactive 对象，由于其包含多个属性，在模板中使用时可能会产生歧义，Vue 无法确定应该显示哪个属性的值
 
@@ -329,7 +423,7 @@ Vue.delete(arr, 1) // 删除元素2
 // 现在 arr 变成 [1, 3]
 ```
 
-## 问题 19：vue2、vue3中 v-if 和 v-for 的优先级
+## 问题 19：vue2、vue3 中 v-if 和 v-for 的优先级
 
 - 在 Vue2 中，`v-for` 的优先级高于 `v-if`。
 

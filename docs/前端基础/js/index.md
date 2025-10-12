@@ -420,6 +420,30 @@ undefined + 2 // NaN
 
   :::
 
+  ::: tip WeakMap 与 Map 的区别
+
+  1. WeakMap 的 key 必须是对象，而 Map 可以是任意类型
+  2. WeakMap 不支持迭代对象的方法
+  3. 当 GC（垃圾回收）时，数据会被回收（与 Map 的最大区别）
+
+  ```js
+  const user = {
+    username: 'admin',
+    password: 'password'
+  }
+
+  const map = new Map()
+  const weakMap = new WeakMap()
+
+  map.set(user, 'admin')
+  weakMap.set(user, 'admin')
+
+  // 被垃圾回收，map保持引用连接，而weakMap则会丢失
+  user = null
+  ```
+
+  :::
+
   ::: tip WeakMap 使用场景
 
   1. DOM 元素附加数据（避免内存泄漏）：因为 weakMap 不会影响垃圾回收，所以可以用来关联元数据
@@ -2141,7 +2165,23 @@ self.onmessage = function (req) {
 
 ![0.1+0.2](./img/0.1+0.2.png)
 
-因为 js 存储 number 是双精度浮点数存储，浮点数在计算机中无法精确表示。
+在 JavaScript 中整数和浮点数都属于 `number` 数据类型，所有数字都是以 64 位浮点数形式储存，即便整数也是如此。所以我们在打印 `1.00` 这样的浮点数的结果是 `1` 而非 `1.00`。
+
+**为什么会有这样的问题？**
+
+在计算机底层只有 0 和 1，所有的运算都是二进制计算。在 C 语言中，浮点数采用的是 IEEE754 标准，这个标准的表现形式其实就是把一个 32bits 分成 3 段：
+
+- 符号位：1bit
+- 指数位：8bits
+- 尾数位：23bits
+
+在 JS 中数字采用的是 IEEE754 标准的 64 位双精度浮点数，在内存中的表示：
+
+- 符号位：第一位正负数符合位，0 为正，1 为负
+- 指数位：11bits，用来表示次方
+- 尾数位：52bits，存储小数部分，超出部分自动进 1 舍 0
+
+**既然要限定位数，那必然会有截断的可能**。
 
 **解决方法：**
 
