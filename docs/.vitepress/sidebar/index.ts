@@ -90,6 +90,56 @@ export const sidebar = {
       ]
     },
     {
+      text: '孩子王',
+      items: [
+        {
+          text: '实习学到了什么',
+          link: '/项目/实习项目/孩子王/实习学到了什么'
+        },
+        {
+          text: '实习中遇到的难点',
+          link: '/项目/实习项目/孩子王/实习中遇到的难点'
+        },
+        {
+          text: 'css变量抽离及vs插件开发',
+          link: '/项目/实习项目/孩子王/css变量抽离及vs插件开发'
+        },
+        {
+          text: '源码定位插件',
+          link: '/项目/实习项目/孩子王/源码定位插件'
+        },
+        {
+          text: '数据埋点',
+          link: '/项目/实习项目/孩子王/数据埋点'
+        },
+        {
+          text: 'Prompt和AI增量流式渲染',
+          link: '/项目/实习项目/孩子王/Prompt和AI增量流式渲染'
+        },
+        {
+          text: 'vnode',
+          link: '/项目/实习项目/孩子王/vnode'
+        },
+        {
+          text: 'AI提效和MCP',
+          link: '/项目/实习项目/孩子王/AI提效和MCP'
+        },
+        {
+          text: '分享',
+          items: [
+            {
+              text: 'AI Coding分享',
+              link: '/项目/实习项目/孩子王/AI Coding分享'
+            },
+            {
+              text: 'react fiber分享',
+              link: '/项目/实习项目/孩子王/react fiber分享'
+            }
+          ]
+        }
+      ]
+    },
+    {
       text: '个人项目🍔 低代码项目',
       items: [
         {
