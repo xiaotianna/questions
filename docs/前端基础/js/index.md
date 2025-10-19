@@ -413,7 +413,7 @@ undefined + 2 // NaN
   person2.set(person, '张三')
   person = null
   // 等待垃圾回收后
-  console.log(person2, person2.get(mpPerson)) // WeakMap {{…}} => '张三'}   undefined
+  console.log(person2, person2.get(mpPerson)) // WeakMap {…} => '张三'}   undefined
   ```
 
   > 创建一个 weakMap 对象 person1 和一个对象 person，并且将该对象作为键，键值为"张三"添加到 person1 中；然后将变量 person 设置为 null，断开了变量与对象的引用，然而 person1 对 person 是弱引用，所以垃圾回收器可以回收 person 对象。
