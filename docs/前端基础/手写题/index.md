@@ -299,3 +299,38 @@ setTimeout(() => {
 ## 问题 7：手写 节流、防抖、深浅拷贝、call、apply、bind、promise
 
 这些问题在对应 JS 部分 和 Promise 部分有。
+
+## 问题 8：手写 LRU 缓存算法
+
+LRU 缓存算法是一种常用的缓存算法，它基于**最久未使用**的原则，即当缓存空间满了时，会淘汰最近最不常用的缓存项。
+
+```js
+class LRUCache {
+  constructor(capacity) {
+    // 最大容量
+    this.capacity = capacity
+    this.cache = new Map()
+  }
+
+  has(key) {
+    return this.cache.has(key)
+  }
+  get(key) {
+    const value = this.cache.get(key)
+    // 删除并重新插入，确保是最新加入的
+    this.cache.delete(key)
+    this.cache.set(key, value)
+    return value
+  }
+  put(key, value) {
+    if (this.cache.has(key)) {
+      // 如果有值，先删除，再新增
+      this.cache.delete(key)
+    } else if (this.cache.size >= this.capacity) {
+      // 没有值，如果容量已满，删除最老的缓存
+      this.cache.delete(this.cache.keys().next().value)
+    }
+    this.cache.set(key, value)
+  }
+}
+```
