@@ -74,7 +74,7 @@ export const sidebar = {
           link: '/性能优化/页面请求接口大规模并发问题'
         },
         { text: '缓存', link: '/性能优化/缓存' },
-        { text: '数据埋点', link: '/性能优化/数据埋点' },
+        { text: '数据埋点', link: '/性能优化/数据埋点' }
       ]
     }
   ],
@@ -125,17 +125,8 @@ export const sidebar = {
           link: '/项目/实习项目/孩子王/AI提效和MCP'
         },
         {
-          text: '分享',
-          items: [
-            {
-              text: 'AI Coding分享',
-              link: '/项目/实习项目/孩子王/AI Coding分享'
-            },
-            {
-              text: 'react fiber分享',
-              link: '/项目/实习项目/孩子王/react fiber分享'
-            }
-          ]
+          text: 'AI Coding分享',
+          link: '/项目/实习项目/孩子王/AI Coding分享'
         }
       ]
     },
@@ -240,7 +231,7 @@ export const sidebar = {
       items: [
         { text: '自我介绍', link: '/场景题/其他/自我介绍' },
         { text: '如何聊项目', link: '/场景题/其他/如何聊项目' },
-        { text: '反问', link: '/场景题/其他/反问' },
+        { text: '反问', link: '/场景题/其他/反问' }
       ]
     }
   ],
