@@ -328,7 +328,13 @@ class LRUCache {
       this.cache.delete(key)
     } else if (this.cache.size >= this.capacity) {
       // 没有值，如果容量已满，删除最老的缓存
+      // this.cache.keys() 返回一个迭代器对象，该迭代器可以遍历 Map 中所有的键
+      // 迭代器对象具有 next() 方法，调用该方法会返回一个包含 value 和 done 属性的对象
+      // this.cache.keys().next().value 用来获取迭代器中第一个键的值
       this.cache.delete(this.cache.keys().next().value)
+      // 或者将 Map 的 keys 转换为数组，取第一个元素
+      // const oldestKey = Array.from(this.cache.keys())[0]
+      // this.cache.delete(oldestKey)
     }
     this.cache.set(key, value)
   }
