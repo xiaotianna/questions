@@ -273,3 +273,140 @@ class ErrorBoundary extends React.Component {
 
 - **React Hooks**：Hooks 是 React 16.8 新增的特性，允许在函数组件中使用状态和其他 React 特性，打破了函数组件只能渲染 UI，不能使用状态和生命周期的限制。通常以 use 开头，如 useState、useEffect、useContext 等。
 - **Utils**：指的是开发者自己编写的一些工具函数，用于解决特定问题，实现某些逻辑，减少重复代码。这些函数不依赖于 React 的生命周期，可以在任何 JavaScript 环境中使用。
+
+## 问题 14：为何 dev 模式下 useEffect 执行两次？
+
+在 React 18 的 **开发模式** 下，你可能会注意到 `useEffect` 执行了两次，这是 **刻意设计的行为**，不是 bug。
+
+**为什么会执行两次？**
+
+React 18 引入了 **Strict Mode（严格模式）** 的开发增强功能，会在开发环境中模拟"组件二次挂载"的场景：
+
+- 第一次正常挂载
+- 立即"卸载"组件
+- 再次重新挂载
+
+**影响范围**
+
+- **只在开发模式**下发生，生产环境不会有此行为
+- **只影响**带有副作用的钩子：`useEffect`、`useLayoutEffect` 等
+- **不影响**纯渲染逻辑
+
+**如何避免重复执行**
+
+1. **清理副作用**（推荐做法）
+
+   ```jsx
+   useEffect(() => {
+     const timer = setInterval(() => console.log('tick'), 1000)
+     return () => clearInterval(timer) // 清理函数
+   }, [])
+   ```
+
+2. **移除 StrictMode**（不推荐）
+
+   ```jsx
+   // index.js
+   ReactDOM.createRoot(rootElement).render(<App />)
+   // 而不是 <React.StrictMode><App /></React.StrictMode>
+   ```
+
+3. **条件判断**
+   ```jsx
+   useEffect(() => {
+     if (isMounted.current) {
+       // 执行副作用
+     }
+     return () => {
+       isMounted.current = false
+     }
+   }, [])
+   ```
+
+**总结**
+
+- React 18 开发模式下 `useEffect` 执行两次是 **正常现象**
+- 这是为了帮助你写出更健壮的代码
+- 最佳实践是 **正确清理副作用**，而不是盲目寻找"关闭"方法
+
+## 问题 15：React state 不可变数据
+
+在 React 中，**状态（state）的不可变性** 是指你不能直接修改状态的值，而是需要创建一个新的值来替换旧的状态。
+
+使用不可变数据可以带来如下好处：
+
+1. **性能优化**
+
+React 使用浅比较（shallow comparison）来检测状态是否发生变化。如果状态是不可变的，React 只需要比较引用（即内存地址）是否变化，而不需要深度遍历整个对象或数组。
+
+2. **可预测性**
+
+- 不可变数据使得状态的变化更加可预测和可追踪。
+- 每次状态更新都会生成一个新的对象或数组，这样可以更容易地调试和追踪状态的变化历史。
+
+3. **避免副作用**
+
+- 直接修改状态可能会导致意外的副作用，尤其是在异步操作或复杂组件中。
+- 不可变数据确保了状态的更新是纯函数式的，避免了副作用。
+
+## 问题 16：React state 异步更新
+
+在 React 18 之前，React 采用批处理策略来优化状态更新。在批处理策略下，React 将在事件处理函数结束后应用所有的状态更新，这样可以避免不必要的渲染和 DOM 操作。
+
+然而，这个策略在异步操作中就无法工作了。因为 React 没有办法在适当的时机将更新合并起来，所以结果就是在异步操作中的每一个状态更新都会导致一个新的渲染。
+
+例如，当你在一个 onClick 事件处理函数中连续调用两次 setState，React 会将这两个更新合并，然后在一次重新渲染中予以处理。
+
+然而，在某些场景下，如果你在事件处理函数之外调用 setState，React 就无法进行批处理了。比如在 setTimeout 或者 Promise 的回调函数中。在这些场景中，每次调用 setState，React 都会触发一次重新渲染，无法达到批处理的效果。
+
+React 18 引入了自动批处理更新机制，让 React 可以捕获所有的状态更新，并且无论在何处进行更新，都会对其进行批处理。这对一些异步的操作，如 Promise，setTimeout 之类的也同样有效。
+
+这一新特性的实现，核心在于 React 18 对渲染优先级的管理。React 18 引入了一种新的协调器，被称为“React Scheduler”。它负责管理 React 的工作单元队列。每当有一个新的状态更新请求，React 会创建一个新的工作单元并放入这个队列。当 JavaScript 运行栈清空，Event Loop 即将开始新的一轮循环时，Scheduler 就会进入工作，处理队列中的所有工作单元，实现了批处理。
+
+## 问题 17：React19 升级了哪些新特性？
+
+1. 新的 API: `use`
+
+在 React 19 中，我们引入了一个新的 API 来在渲染中读取资源：use。
+
+例如，你可以使用 use 读取一个 promise，React 将挂起，直到 promise 解析完成：
+
+```jsx
+import { use } from 'react'
+
+function Comments({ commentsPromise }) {
+  // `use` 将被暂停直到 promise 被解决.
+  const comments = use(commentsPromise)
+  return comments.map((comment) => <p key={comment.id}>{comment}</p>)
+}
+
+function Page({ commentsPromise }) {
+  // 当“use”在注释中暂停时,
+  // 将显示此悬念边界。
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Comments commentsPromise={commentsPromise} />
+    </Suspense>
+  )
+}
+```
+
+2. ref 作为一个属性
+
+从 React 19 开始，你现在可以在函数组件中将 ref 作为 prop 进行访问：
+
+```jsx
+function MyInput({ placeholder, ref }) {
+  return (
+    <input
+      placeholder={placeholder}
+      ref={ref}
+    />
+  )
+}
+
+//...
+;<MyInput ref={ref} />
+```
+
+新的函数组件将不再需要 `forwardRef`。
