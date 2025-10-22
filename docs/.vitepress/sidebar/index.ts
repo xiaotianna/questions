@@ -260,6 +260,9 @@ export const sidebar = {
       ]
     },
     {
+      items: [{ text: '高频题目', link: '/算法/高频题目' }]
+    },
+    {
       items: [
         { text: '哈希表', link: '/算法/哈希表' },
         { text: '字符串', link: '/算法/字符串' },
