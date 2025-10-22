@@ -20,29 +20,29 @@
         </div>
       </div>
     </div>
-    
+
     <!-- 分页组件 -->
     <div class="pagination">
-      <button 
-        :disabled="currentPage === 1" 
+      <button
+        :disabled="currentPage === 1"
         @click="prevPage"
         class="pagination-btn"
       >
         上一页
       </button>
-      
+
       <!-- 页码按钮 -->
       <button
         v-for="page in displayedPages"
         :key="page"
         @click="goToPage(page)"
-        :class="['pagination-btn', { 'active': currentPage === page }]"
+        :class="['pagination-btn-num', { active: currentPage === page }]"
       >
         {{ page }}
       </button>
-      
-      <button 
-        :disabled="currentPage === totalPages" 
+
+      <button
+        :disabled="currentPage === totalPages"
         @click="nextPage"
         class="pagination-btn"
       >
@@ -71,7 +71,7 @@ const displayedPages = computed(() => {
   const total = totalPages.value
   const current = currentPage.value
   const pages = []
-  
+
   // 总页数小于等于7页时，显示所有页码
   if (total <= 7) {
     for (let i = 1; i <= total; i++) {
@@ -108,7 +108,7 @@ const displayedPages = computed(() => {
       pages.push(total)
     }
   }
-  
+
   return pages
 })
 
@@ -282,8 +282,20 @@ onMounted(() => {
   cursor: not-allowed;
 }
 
-.pagination-btn.active {
+.pagination-btn-num {
+  padding: 8px 16px;
+  background-color: var(--vp-c-bg-soft);
+  color: var(--vp-c-text-2);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  min-width: 40px;
+}
+
+.pagination-btn-num.active {
   background-color: #1a4db3; /* 当前页的背景色 */
+  color: white;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
@@ -302,12 +314,12 @@ onMounted(() => {
     flex: 1 1 auto;
     min-width: 0;
   }
-  
+
   .pagination {
     gap: 10px;
     flex-wrap: wrap;
   }
-  
+
   .pagination-btn {
     padding: 6px 12px;
   }
