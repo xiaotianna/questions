@@ -656,11 +656,10 @@ BFC：块级格式化上下文，就是一个独立的布局环境，BFC 里面�
 
 ## 问题 22：z-index 属性在什么情况下会失效？
 
-z-index 元素的 position 属性需要是 relative，absolute 或是 fixed。
+z-index 仅对设置了 `position: relative/absolute/fixed/sticky` 的元素生效。
 
 z-index 属性在下列情况下会失效：
 
-- 父元素 position 为 relative 时，子元素的 z-index 失效。解决：父元素 position 改为 absolute 或 static；
 - 元素没有设置 position 属性为非 static 属性。解决：设置该元素的 position 属性为 relative，absolute 或是 fixed 中的一种；
 - 元素在设置 z-index 的同时还设置了 float 浮动。解决：float 去除，改为 display：inline-block；
 
