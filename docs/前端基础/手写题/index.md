@@ -98,7 +98,7 @@ setTimeout(() => {
 // 定时器执行完后，第二次触发 render
 ```
 
-## 问题 3：手写 intanceof 操作符
+## 问题 3：手写 instanceof 操作符
 
 `instanceof` 运算符用于检测构造函数的 `prototype` 属性是否出现在某个实例对象的原型链上。
 
@@ -296,7 +296,7 @@ setTimeout(() => {
 
 :::
 
-## 问题 7：手写 节流、防抖、深浅拷贝、new、call、apply、bind、promise、setTimeout、setInterval、并发请求
+## 问题 7：手写 节流、防抖、深浅拷贝、new、call、apply、bind、promise、setTimeout、setInterval校正、并发请求
 
 这些问题在对应 JS 部分 和 Promise 部分有。
 
