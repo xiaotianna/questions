@@ -447,29 +447,24 @@ class MyPromise {
     }
   }
 
-  then(onFulfilled, onRejected) {
-    // [!code ++]
+  then(onFulfilled, onRejected) { // [!code ++]
     // 同步成功 // [!code ++]
     if (this.status === 'fulfilled') {
       // [!code ++]
       onFulfilled(this.value) // [!code ++]
     } // [!code ++]
     // 同步失败 // [!code ++]
-    if (this.status === 'rejected') {
-      // [!code ++]
+    if (this.status === 'rejected') { // [!code ++]
       onRejected(this.reason) // [!code ++]
     } // [!code ++]
     // 异步 // [!code ++]
-    if (this.status === 'pending') {
-      // [!code ++]
+    if (this.status === 'pending') { // [!code ++]
       // push一个函数的原因：方便后续在函数内添加其他操作 // [!code ++]
-      this.onFulfilledCallbacks.push(() => {
-        // [!code ++]
+      this.onFulfilledCallbacks.push(() => { // [!code ++]
         // 异步调用时，在 constructor 的 resolve 中，this.value 已经被赋值 // [!code ++]
         onFulfilled(this.value) // [!code ++]
       }) // [!code ++]
-      this.onRejectedCallbacks.push(() => {
-        // [!code ++]
+      this.onRejectedCallbacks.push(() => { // [!code ++]
         onRejected(this.reason) // [!code ++]
       }) // [!code ++]
     } // [!code ++]
@@ -530,14 +525,11 @@ class MyPromise {
 
   then(onFulfilled, onRejected) {
     // promise2 为新的 promise
-    let promise2 = new MyPromise((resolve, reject) => {
-      // [!code ++]
+    let promise2 = new MyPromise((resolve, reject) => { // [!code ++]
       // 同步成功
       if (this.status === 'fulfilled') {
-        queueMicrotask(() => {
-          // [!code ++]
-          try {
-            // [!code ++]
+        queueMicrotask(() => { // [!code ++]
+          try { // [!code ++]
             // x为onFulfilled的返回值 // [!code ++]
             let x = onFulfilled(this.value) // [!code ++]
             // x可能是普通值，也可能是promise，不能直接resolve(x)，需要处理 // [!code ++]
@@ -547,8 +539,7 @@ class MyPromise {
              * 所以采用异步代码包裹（可以用 setTimeout、queueMicrotask） // [!code ++]
              */ // [!code ++]
             resolvePromise(promise2, x, resolve, reject) // [!code ++]
-          } catch (error) {
-            // [!code ++]
+          } catch (error) { // [!code ++]
             reject(error) // [!code ++]
           } // [!code ++]
         }) // [!code ++]
@@ -712,29 +703,23 @@ class MyPromise {
     }
   }
 
-  then(onFulfilled, onRejected) {
-    // [!code ++]
+  then(onFulfilled, onRejected) { // [!code ++]
     // 判断then的参数是可选参数 // [!code ++]
     onFulfilled = // [!code ++]
       typeof onFulfilled === 'function' ? onFulfilled : (value) => value // [!code ++]
     onRejected = // [!code ++]
       typeof onRejected === 'function' // [!code ++]
         ? onRejected // [!code ++]
-        : (err) => {
-            // [!code ++]
+        : (err) => { // [!code ++]
             throw err // [!code ++]
           } // [!code ++]
     // promise2 为新的 promise // [!code ++]
-    let promise2 = new MyPromise((resolve, reject) => {
-      // [!code ++]
+    let promise2 = new MyPromise((resolve, reject) => { // [!code ++]
       // 同步成功 // [!code ++]
-      if (this.status === 'fulfilled') {
-        // [!code ++]
-        queueMicrotask(() => {
-          // [!code ++]
+      if (this.status === 'fulfilled') { // [!code ++]
+        queueMicrotask(() => { // [!code ++]
           // try...catch用于捕获onFulfilled、onRejected中抛出的错误 // [!code ++]
-          try {
-            // [!code ++]
+          try { // [!code ++]
             // x为onFulfilled的返回值 // [!code ++]
             let x = onFulfilled(this.value) // [!code ++]
             // x可能是普通值，也可能是promise，不能直接resolve(x)，需要处理 // [!code ++]
@@ -745,56 +730,42 @@ class MyPromise {
              * 所以采用异步代码包裹（可以用 setTimeout、queueMicrotask） // [!code ++]
              */ // [!code ++]
             resolvePromise(promise2, x, resolve, reject) // [!code ++]
-          } catch (error) {
-            // [!code ++]
+          } catch (error) { // [!code ++]
             reject(error) // [!code ++]
           } // [!code ++]
         }) // [!code ++]
       } // [!code ++]
       // 同步失败 // [!code ++]
-      if (this.status === 'rejected') {
-        // [!code ++]
-        queueMicrotask(() => {
-          // [!code ++]
-          try {
-            // [!code ++]
+      if (this.status === 'rejected') { // [!code ++]
+        queueMicrotask(() => { // [!code ++]
+          try { // [!code ++]
             const x = onRejected(this.reason) // [!code ++]
             resolvePromise(promise2, x, resolve, reject) // [!code ++]
-          } catch (error) {
-            // [!code ++]
+          } catch (error) { // [!code ++]
             reject(error) // [!code ++]
           } // [!code ++]
         }) // [!code ++]
       } // [!code ++]
       // 异步 // [!code ++]
-      if (this.status === 'pending') {
-        // [!code ++]
+      if (this.status === 'pending') { // [!code ++]
         // push一个函数的原因：方便后续在函数内添加其他操作 // [!code ++]
-        this.onFulfilledCallbacks.push(() => {
-          // [!code ++]
-          queueMicrotask(() => {
-            // [!code ++]
-            try {
-              // [!code ++]
+        this.onFulfilledCallbacks.push(() => { // [!code ++]
+          queueMicrotask(() => { // [!code ++]
+            try { // [!code ++]
               // 异步调用时，在 constructor 的 resolve 中，this.value 已经被赋值 // [!code ++]
               const x = onFulfilled(this.value) // [!code ++]
               resolvePromise(promise2, x, resolve, reject) // [!code ++]
-            } catch (error) {
-              // [!code ++]
+            } catch (error) { // [!code ++]
               reject(error) // [!code ++]
             } // [!code ++]
           }) // [!code ++]
         }) // [!code ++]
-        this.onRejectedCallbacks.push(() => {
-          // [!code ++]
-          queueMicrotask(() => {
-            // [!code ++]
-            try {
-              // [!code ++]
+        this.onRejectedCallbacks.push(() => { // [!code ++]
+          queueMicrotask(() => { // [!code ++]
+            try { // [!code ++]
               const x = onRejected(this.reason) // [!code ++]
               resolvePromise(promise2, x, resolve, reject) // [!code ++]
-            } catch (error) {
-              // [!code ++]
+            } catch (error) { // [!code ++]
               reject(error) // [!code ++]
             } // [!code ++]
           }) // [!code ++]
@@ -805,37 +776,28 @@ class MyPromise {
   } // [!code ++]
 }
 
-const resolvePromise = (promise2, x, resolve, reject) => {
-  // [!code ++]
+const resolvePromise = (promise2, x, resolve, reject) => { // [!code ++]
   // 判断x是否是promise // [!code ++]
-  if (promise2 == x) {
-    // [!code ++]
+  if (promise2 == x) { // [!code ++]
     return reject(new TypeError('循环引用')) // [!code ++]
   } // [!code ++]
   // 判断then的返回值x：是一个promise // [!code ++]
-  if ((typeof x === 'object' && x !== null) || typeof x === 'function') {
-    // [!code ++]
-    try {
-      // [!code ++]
+  if ((typeof x === 'object' && x !== null) || typeof x === 'function') { // [!code ++]
+    try { // [!code ++]
       // 判断该方法或对象是否带有then方法 // [!code ++]
-      if (typeof x.then === 'function') {
-        // [!code ++]
-        x.then(
-          // [!code ++]
+      if (typeof x.then === 'function') { // [!code ++]
+        x.then( // [!code ++]
           (res) => resolve(res), // [!code ++]
           (rej) => reject(rej) // [!code ++]
         ) // [!code ++]
-      } else {
-        // [!code ++]
+      } else { // [!code ++]
         // 不带then，为普通对象，直接返回 // [!code ++]
         resolve(x) // [!code ++]
       } // [!code ++]
-    } catch (error) {
-      // [!code ++]
+    } catch (error) { // [!code ++]
       reject(error) // [!code ++]
     } // [!code ++]
-  } else {
-    // [!code ++]
+  } else { // [!code ++]
     // x是一个普通值 // [!code ++]
     resolve(x) // [!code ++]
   } // [!code ++]
