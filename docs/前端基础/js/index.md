@@ -1652,7 +1652,7 @@ console.log('test.prototype.constructor🌍', test.prototype.constructor)
 
 ### 原型链
 
-原型对象也是对象，也有**proto**属性，像这样一层一层往上的结构就是原型链，最顶层为 null（`Object.prototype.__proto__ === null`），返回值是 undefined
+原型对象也是对象，也有`__proto__`属性，像这样一层一层往上的结构就是原型链，最顶层为 null（`Object.prototype.__proto__ === null`），返回值是 undefined
 
 原型链顶层为 `null`（`Object.prototype.__proto__ === null`）
 
@@ -1826,6 +1826,8 @@ myDog.say() // Animal say: dog
 ```
 
 ### 构造函数继承
+
+将父类的构造函数的 this 指向子类
 
 ```js
 function Animal(name) {
@@ -2731,7 +2733,7 @@ function base64UrlDecode(base64Url) {
 }
 ```
 
-<u style="background-color: pink;">这个 JSON 会使用 **Base64Url** 编码形成 JWT 的第一部分</u>。
+<u style="background-color: pink;">这个 JSON 会使用 **Base64Url** 编码形成 JWT 的第二部分</u>。
 
 #### Signature（签名）
 
@@ -3074,7 +3076,7 @@ console.log(Number('1.23abc')) // NaN
 
 ```js
 console.log(Math.floor(123.999)) // 123
-console.log(Math.floor(-123.999)) // 124
+console.log(Math.floor(-123.999)) // -124
 ```
 
 - **.toFixed**：将数字转为字符串，并指定小数位数，同时对小数部分进行四舍五入。

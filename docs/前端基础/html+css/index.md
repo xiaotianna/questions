@@ -767,7 +767,7 @@ flex 布局也叫做弹性布局，作为 flex 的容器，容器默认存在两
 
 ### flex-shrink
 
-`flex-shrink: <number>`：`<number>` 是一个无单位的数字，默认值为 1。此数字表示弹性子元素在**空间不足**（容器 width < 几个元素的 withd 和）时相对于其他子元素收缩的比例。
+`flex-shrink: <number>`：`<number>` 是一个无单位的数字，默认值为 1。此数字表示弹性子元素在**空间不足**（容器 width < 几个元素的 withd 和）时相对于其他子元素收缩的比例。元素必须设置 `width` 值。
 
 ::: details 示例
 

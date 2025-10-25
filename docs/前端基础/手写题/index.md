@@ -296,7 +296,7 @@ setTimeout(() => {
 
 :::
 
-## 问题 7：手写 节流、防抖、深浅拷贝、call、apply、bind、promise
+## 问题 7：手写 节流、防抖、深浅拷贝、new、call、apply、bind、promise、setTimeout、setInterval、并发请求
 
 这些问题在对应 JS 部分 和 Promise 部分有。
 
