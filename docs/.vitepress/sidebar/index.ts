@@ -86,7 +86,8 @@ export const sidebar = {
           text: '移动端上拉加载、下拉刷新实现方案',
           link: '/项目/实习项目/移动端上拉加载、下拉刷新实现方案'
         },
-        { text: '微前端', link: '/项目/实习项目/微前端' }
+        { text: '微前端', link: '/项目/实习项目/微前端' },
+        { text: 'requestAnimationFrame封装定时器', link: '/项目/实习项目/requestAnimationFrame封装定时器' },
       ]
     },
     {

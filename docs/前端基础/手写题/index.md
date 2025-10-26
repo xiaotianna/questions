@@ -146,13 +146,19 @@ console.log(myInstanceof(obj, A))
 
 ```js
 function MyObjectCreate(obj) {
+  // object 必须是对象或 null，否则抛错
+  if (typeof obj !== 'object' && typeof obj !== 'function' && obj !== null) {
+    throw new TypeError('Object prototype may only be an Object or null')
+  }
+  // 核心代码
   function Fn() {}
   Fn.prototype = obj
   return new Fn()
 }
 
-class A {}
-const aObj = MyObjectCreate(A.prototype)
+const person = { name: 'wifi' }
+const p = MyObjectCreate(person)
+console.log(p.__proto__ === person) // true（原型绑定成功）
 ```
 
 ## 问题 5：使用 setTimeout 实现 setInterval
