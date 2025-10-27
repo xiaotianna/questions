@@ -1497,6 +1497,7 @@ greet.call(person, 'Bob', 30)
 Function.prototype.myCall = function (ctx, ...args) {
   ctx = ctx || window // 默认为window
   const key = Symbol() // 创建一个唯一键，避免属性名冲突
+  // 目的是让ctx（也就是新对象）去调用这个函数，就改变了原函数的this指向
   ctx[key] = this // 在上下文中添加一个属性，将函数赋值给这个属性（通过 this 获取到 greet 函数）
   const result = ctx[key](...args) // 执行函数（cxt上下文调用后，函数的this就指向ctx）
   delete ctx[key] // 删除属性
