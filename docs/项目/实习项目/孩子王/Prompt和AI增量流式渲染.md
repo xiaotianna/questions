@@ -646,21 +646,15 @@ const mapTokenToTag = (token: Token): string | typeof Think => {
 
 **自动完成不完整的格式**：
 
-- **Bold**: `**incomplete` → `**incomplete**` (auto-closed)
-  粗体： `**incomplete` → `**incomplete**` （自动关闭）
-- **Italic**: `*incomplete` → `*incomplete*` (auto-closed)
-  斜体： `*incomplete` → `*incomplete*` （自动关闭）
-- **Strikethrough**: `~~incomplete` → `~~incomplete~~` (auto-closed)
-  删除线： `~~incomplete` → `~~incomplete~~` （自动关闭）
-- **Inline code**: `` `incomplete`` → `` `incomplete` `` (auto-closed)
-  内联代码： `` `incomplete`` → `` `incomplete` `` （自动关闭）
+- **Bold**: `**incomplete` → `**incomplete**` （自动关闭）
+- **Italic**: `*incomplete` → `*incomplete*` （自动关闭）
+- **Strikethrough**: `~~incomplete` → `~~incomplete~~` （自动关闭）
+- **Inline code**: `` `incomplete`` → `` `incomplete` `` （自动关闭）
 
 **隐藏不完整的元素**
 
-- **Links**: `[incomplete text` (hidden until `]` appears)
-  链接： `[incomplete text` （隐藏直到 `]` 出现）
-- **Images**: `![incomplete alt` (hidden until `]` appears)
-  图像： `![incomplete alt` （隐藏直到 `]` 出现）
+- **Links**: `[incomplete text` （隐藏直到 `]` 出现）
+- **Images**: `![incomplete alt` （隐藏直到 `]` 出现）
 - **Code blocks**: Protects triple backticks from inline code completion
   代码块：保护三重反引号免受内联代码补全的影响
 
