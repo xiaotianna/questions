@@ -250,6 +250,8 @@ HTTPS 增加的 <u style="background: pink;">TLS/SSL 层可以**对身份进行�
 5. **生成会话密钥（Session Key）**：在上一步，生成**Pre-Master Secret**，用服务器公钥加密后发送。然后服务器用私钥解密，得到 Pre-Master Key，结合 Client Random 和 Server Random 生成**会话密钥（Session Key）**
 
 > Client Random + Server Random + Pre-Master Secret
+>
+> 私钥由证书申请者（服务器/用户）自己生成和保管，ca 证书不包含私钥
 
 6. **加密通信**：后续所有数据使用对称加密（如 AES）传输，提高效率。
 
@@ -534,7 +536,20 @@ Set-Cookie: token=abc123; domain=.example.com; path=/; Secure; HttpOnly
 - **自动保存**：浏览器接收到包含 Set-Cookie 响应头的 HTTP 响应后，会根据 Cookie 的属性（如域名、路径、有效期等）自动将 Cookie 保存在本地。
 - **发送 Cookie**：之后，当浏览器向同一域名下的服务器发起请求时，会自动在请求头中添加 Cookie 字段，将对应的 Cookie 发送给服务器。
 
-> ⚠️ 注意：浏览器对 Cookie 的处理遵循同源策略，即只有在请求的域名、协议和端口与设置 Cookie 时一致的情况下，浏览器才会自动携带 Cookie。
+::: details Cookie 自动携带不在同源策略的限制内（要背）
+
+**同源策略的核心限制范围**：
+
+同源策略（SOP）主要管两件事，且只针对**前端脚本**：
+
+- 禁止跨域读取 Cookie、LocalStorage 等存储数据（比如恶意网站的 JS 不能直接读取目标网站的 Cookie 内容）；
+- 禁止跨域读取 HTTP 响应数据（比如恶意网站的 JS 不能读取目标网站接口返回的用户信息）。
+
+**浏览器携带 Cookie 的规则**：
+
+只要请求的目标地址，与 Cookie 的 “Domain（域名）”“Path（路径）” 匹配，无论请求是从哪个网站发起的，浏览器都会自动带上这个 Cookie
+
+:::
 
 **缺点：**
 
@@ -671,12 +686,14 @@ app.options('*', (req, res) => {
 
 ## 面试题 15：同源策略具体限制的具体内容
 
-- **DOM 访问限制**：不同源的网页不能直接访问彼此的 DOM 元素，包括读取和修改。这意味着一个网页无法通过 JavaScript 获取另一个网页的内容，除非目标网页明确授权。
-- **Cookie 限制**：同源策略阻止网页访问不属于自己源的 Cookie。Cookie 是用于在客户端存储和传输信息的机制，同源策略确保 Cookie 只能由创建它的源访问。
-- **XMLHttpRequest 限制**：XMLHttpRequest（XHR）是用于在网页和服务器之间进行异步数据交换的技术。同源策略禁止不同源的网页通过 XHR 请求发送或接收数据。
-- **IndexedDB**：IndexedDB 遵循同源策略。但是可以通过 iframe 来进行数据传递。
-- **跨文档消息限制**：同源策略限制不同源的窗口或帧之间通过 postMessage()方法进行通信。这可以防止恶意网页滥用通信渠道。
-- **脚本限制**：不同源的脚本文件（如 JavaScript）不能相互引用和执行。
+同源策略（SOP）核心限制：**不同源的客户端脚本（如 JS）无法读取/修改对方的敏感资源，仅允许特定跨源操作**。
+
+具体限制内容：
+
+1. 禁止读取 Cookie、LocalStorage、SessionStorage 等存储数据；
+2. 禁止访问 DOM 节点（如 iframe 跨源页面的内容）；
+3. 禁止发送跨源 AJAX/fetch 请求（或仅允许“简单请求”，非简单请求需预检）；
+4. 禁止获取跨源资源的响应头（仅暴露少数默认头，如 Cache-Control）。
 
 ## 面试题 16：发起请求是浏览器做了什么？
 
@@ -817,7 +834,7 @@ DNS 是 Domain Name System（域名系统）的缩写，它是互联网的一项
 
 ### CSRF 跨站请求伪造
 
-csrf 利用用户登陆状态，然后进行隐私数据的盗取，发起带有特殊目的的请求（就是利用 Cookie）
+csrf 利用用户登陆状态，发起带有特殊目的的请求（就是利用 Cookie），然后进行隐私数据的盗取
 
 #### **攻击过程**
 
