@@ -249,7 +249,7 @@ HTTPS 增加的 <u style="background: pink;">TLS/SSL 层可以**对身份进行�
 
 5. **生成会话密钥（Session Key）**：在上一步，生成**Pre-Master Secret**，用服务器公钥加密后发送。然后服务器用私钥解密，得到 Pre-Master Key，结合 Client Random 和 Server Random 生成**会话密钥（Session Key）**
 
-> Client Random + Server Random + Pre-Master Secret
+> Client Random + Server Random + Pre-Master Secret（双方都要生成）
 >
 > 私钥由证书申请者（服务器/用户）自己生成和保管，ca 证书不包含私钥
 
