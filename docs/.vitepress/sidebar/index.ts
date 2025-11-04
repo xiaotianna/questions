@@ -64,6 +64,12 @@ export const sidebar = {
         { text: '性能优化概括', link: '/性能优化/' },
         { text: '性能优化指标', link: '/性能优化/性能优化指标' },
         { text: '首屏加载优化', link: '/性能优化/首屏加载优化' },
+        { text: '缓存', link: '/性能优化/缓存' }
+      ]
+    },
+    {
+      text: '具体实现',
+      items: [
         { text: '懒加载', link: '/性能优化/懒加载' },
         { text: '虚拟列表', link: '/性能优化/虚拟列表' },
         { text: '打包体积过大', link: '/性能优化/打包体积过大' },
@@ -73,8 +79,7 @@ export const sidebar = {
           text: '页面请求接口大规模并发问题',
           link: '/性能优化/页面请求接口大规模并发问题'
         },
-        { text: '缓存', link: '/性能优化/缓存' },
-        { text: '数据埋点', link: '/性能优化/数据埋点' }
+        { text: '数据埋点', link: '/项目/实习项目/孩子王/数据埋点' }
       ]
     }
   ],
@@ -87,7 +92,10 @@ export const sidebar = {
           link: '/项目/实习项目/移动端上拉加载、下拉刷新实现方案'
         },
         { text: '微前端', link: '/项目/实习项目/微前端' },
-        { text: 'requestAnimationFrame封装定时器', link: '/项目/实习项目/requestAnimationFrame封装定时器' },
+        {
+          text: 'requestAnimationFrame封装定时器',
+          link: '/项目/实习项目/requestAnimationFrame封装定时器'
+        }
       ]
     },
     {
