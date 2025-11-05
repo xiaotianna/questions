@@ -469,3 +469,27 @@ function MyInput({ placeholder, ref }) {
 ```
 
 新的函数组件将不再需要 `forwardRef`。
+
+## 问题 19：useDeferredValue 和 useTransition 的区别
+
+useDeferredValue 和 useTransition 都是 React 18 引入的并发特性，核心目标是优化长任务导致的 UI 阻塞问题
+
+- `useDeferredValue`：优化「**状态的渲染优先级**」—— 让一个 “非紧急” 状态的更新延迟执行，优先保证紧急状态（如输入、点击）的响应性。这对于高频更新的内容(如输入框、滚动等)非常有用
+
+```jsx
+const deferredContent = useDeferredValue(content) // content 为编辑区源内容
+return <Preview content={deferredContent} />
+```
+
+- `useTransition`：优化「**更新操作的优先级**」—— 把一个 “非紧急” 的更新操作标记为 “过渡任务”，让它在后台低优先级执行，不阻塞紧急操作。它常用于优化视图切换时的用户体验（如 tab 切换）。
+
+```js
+const [isPending, startTransition] = useTransition()
+
+// startTransition包裹需要更新状态代码
+startTransition(() => {
+  setCount(1)
+})
+```
+
+> ⚠️ 注意：传递给 `startTransition` 的函数必须是同步的，React 会立即执行此函数
