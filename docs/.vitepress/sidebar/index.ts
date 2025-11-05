@@ -185,10 +185,6 @@ export const sidebar = {
           link: '/项目/个人项目/im项目本地数据库方案'
         },
         {
-          text: '虚拟列表+无限滚动',
-          link: '/项目/个人项目/虚拟列表+无限滚动'
-        },
-        {
           text: 'im项目为什么选择socket.io',
           link: '/项目/个人项目/im项目为什么选择socket.io'
         },
