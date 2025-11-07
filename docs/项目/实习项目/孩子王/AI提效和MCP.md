@@ -647,6 +647,142 @@ function generateMarkdown(data) {
 
 :::
 
+### 接口校验
+
+验证API接口错误返回信息。当通过`monitor_console_log`（错误自检）工具捕获到失败的接口请求时，使用此工具重新发送请求以验证错误详情
+
+```ts
+import {
+  createErrorResponse,
+  createSuccessResponse,
+  defineTool,
+  ToolResponse,
+} from '../utils/index.js';
+import axios from 'axios';
+
+/**
+ * 用于接口错误参数校验的工具
+ * 该接口基于monitor_console_log工具，当发现到网络请求的错误后，去重新请求，把请求的信息结果返回
+ */
+
+/**
+ * 发送HTTP请求并返回详细响应信息
+ * @param params 请求参数
+ * @returns 响应信息
+ */
+async function sendRequest(params: {
+  url: string;
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+  headers?: Record<string, string>;
+  body?: any;
+  timeout?: number;
+}): Promise<ToolResponse> {
+  const { url, method = 'GET', headers = {}, body, timeout = 5000 } = params;
+  try {
+    // 构建请求配置
+    const config: any = {
+      url,
+      method,
+      headers,
+      timeout,
+      validateStatus: () => true, // 接受所有状态码，便于分析错误
+    };
+
+    // 如果有请求体且方法允许，则添加请求体
+    if (body && ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())) {
+      // 设置默认Content-Type
+      if (!headers['Content-Type']) {
+        headers['Content-Type'] = 'application/json';
+      }
+      config.data = body;
+    }
+
+    // 发送请求
+    const response = await axios(config);
+
+    // 返回详细响应信息
+    const result = {
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers,
+      data: response.data,
+      url: response.config?.url,
+      method: response.config?.method?.toUpperCase(),
+    };
+
+    return createSuccessResponse(JSON.stringify(result, null, 2));
+  } catch (error: any) {
+    // 处理请求错误
+    if (error.isAxiosError) {
+      const errorInfo = {
+        message: error.message,
+        code: error.code,
+        url: error.config?.url,
+        method: error.config?.method?.toUpperCase(),
+        response: error.response
+          ? {
+              status: error.response.status,
+              statusText: error.response.statusText,
+              headers: error.response.headers,
+              data: error.response.data,
+            }
+          : null,
+      };
+
+      return createSuccessResponse(
+        `请求失败:
+${JSON.stringify(errorInfo, null, 2)}`
+      );
+    }
+
+    // 处理其他错误
+    return createErrorResponse(
+      error instanceof Error ? error : new Error(String(error))
+    );
+  }
+}
+
+export default defineTool(
+  {
+    name: 'validate_api_error',
+    description:
+      '验证API接口错误返回信息。当通过monitor_console_log工具捕获到失败的接口请求时，使用此工具重新发送请求以验证错误详情，帮助识别由于不同错误代码导致的问题。',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        url: {
+          type: 'string',
+          description: '要请求的API地址',
+          format: 'uri',
+        },
+        method: {
+          type: 'string',
+          description: 'HTTP请求方法',
+          enum: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+          default: 'GET',
+        },
+        headers: {
+          type: 'object',
+          description: '请求头信息',
+          additionalProperties: { type: 'string' },
+        },
+        body: {
+          type: 'object',
+          description: '请求体内容（仅适用于POST、PUT、PATCH请求）',
+        },
+        timeout: {
+          type: 'number',
+          description: '请求超时时间（毫秒）',
+          default: 5000,
+        },
+      },
+      required: ['url'],
+    },
+  },
+  sendRequest
+);
+```
+
 ## 需求迭代
 
 通过 cli 生成了`prompt.md`文件，里面会记录需求信息，如果有新的需求继续添加即可。
