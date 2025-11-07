@@ -227,6 +227,6 @@ customElements.define('antd-web-component', SimpleAntdWebComponent)
 
 ## AI 项目在线运行方案
 
-像 v0、bolt 这样的网站，ai 生成了下面，是能够在线运行的，如何在不借助后端的情况下，在前端运行这个项目呢？这里就要说到一个技术：web containers,一个运行在浏览器的容器化技术，可以在浏览器跑 node 代码，内部有虚拟文件系统、终端，可以满足我们的需求。
+像 v0、bolt 这样的网站，ai 生成了页面，是能够在线运行的，如何在不借助后端的情况下，在前端运行这个项目呢？这里就要说到一个技术：web containers,一个运行在浏览器的容器化技术，可以在浏览器跑 node 代码，内部有虚拟文件系统、终端，可以满足我们的需求。
 
 核心就是在于 ai 返回的 json 数据需要转换成 web containers 的文件树结构即可。
