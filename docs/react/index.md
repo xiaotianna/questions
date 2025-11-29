@@ -180,7 +180,7 @@ export default App
 
 ## 问题 9：React 性能优化方案
 
-1. 使用 React.memo()来缓存组件，该组件在 props 没有变化时避免不必要的渲染。。
+1. 使用 React.memo()来缓存组件，该组件在 props 没有变化时避免不必要的渲染。
 2. 使用 React.lazy()和 Suspense 来延迟加载组件。可降低初始加载时间，并提高应用程序的性能。
 3. 使用 React.useCallback()和 React.useMemo()来缓存函数和计算结果，避免不必要的函数调用和计算。
 4. 使用 React.Fragment 来避免不必要的 DOM 节点。可减少 DOM 节点数量，提高应用程序的性能。
