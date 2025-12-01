@@ -503,10 +503,24 @@ Cookie 诞生的主要目的是<u>为了解决 HTTP 协议的无状态性问题<
   - **Max-Age**：指定从当前时间开始，Cookie 有效的秒数。例如，`Max-Age=3600`表示 Cookie 将在 1 小时后过期。如果不设置这两个字段，Cookie 通常在浏览器关闭时就会被删除。
 - **Secure**：该字段是一个布尔值，表示 Cookie 是否只能通过安全的 HTTPS 连接发送。如果设置了`Secure`，那么在 HTTP 连接下，浏览器不会发送该 Cookie，以确保数据传输的安全性。
 - **HttpOnly**：也是一个布尔值，设置为`true`时，Cookie 只能通过 HTTP 协议访问，无法通过客户端脚本（如 JavaScript）访问。这有助于防止跨站点脚本攻击（XSS）窃取 Cookie 信息。
-- **SameSite**：用于控制浏览器在跨站请求时是否携带该 Cookie。它的主要作用是防止跨站请求伪造（CSRF）攻击，增强 Cookie 的安全性。
+- **SameSite**：用于控制浏览器在**跨站**请求时是否携带该 Cookie。它的主要作用是防止跨站请求伪造（CSRF）攻击，增强 Cookie 的安全性。
   - `Strict`：完全禁止跨站携带 Cookie。只有当请求来源与目标网站完全同源（域名、协议、端口一致）时才发送 Cookie。最安全，但用户体验较差。
   - `Lax`：允许部分跨站请求携带 Cookie。允许 GET 类型的顶级导航请求携带 Cookie（例如点击链接跳转），但禁止 POST 请求、iframe 等携带 Cookie。兼顾安全和体验。
   - `None`：允许所有跨站请求携带 Cookie。所有跨站请求都会携带 Cookie，必须配合 `Secure` 属性使用（即只能通过 HTTPS 发送）。适用于嵌入第三方内容的场景，如广告、统计脚本等。
+
+::: details 什么是跨站？
+
+| 页面域         | 请求域           | 是否同站 |
+|----------------|------------------|----------|
+| a.foo.com      | b.foo.com        | ✅        |
+| foo.com        | b.foo.com        | ✅        |
+| a.foo.com      | a.bar.com        | ❌        |
+| a.foo.com      | b.foo.com.cn     | ❌        |
+| a.github.io    | b.github.io      | ❌        |
+
+“同站” 的判定规则是：主域名（比如foo.com -> 二级域名）和顶级域名后缀（比如.com）要完全一致，且主域名前的子域名不影响同站判定。
+
+:::
 
 有关安全性属性：Domain、Secure、HttpOnly、SameSite
 
@@ -692,6 +706,41 @@ app.options('*', (req, res) => {
 
 1. 禁止读取 Cookie、LocalStorage、SessionStorage 等存储数据；
 2. 禁止访问 DOM 节点（如 iframe 跨源页面的内容）；
+
+::: details 示例
+
+1. 不跨域的情况（同站）：
+
+当前从 `https://www.baidu.com/s?wd=vue` 打开控制台输入如下代码，会新打开一个标签页
+
+```js
+var page = window.open('/')
+```
+
+然后输入如下代码，此时新打开的标签页是空白的，也就是 `https://www.baidu.com/` 的页面是空白的
+
+```js
+page.document.body.innerHTML = ''
+```
+
+2. 跨域的情况（不同站）：
+
+例如我从 `https://www.doubao.com/chat/` 打开控制台输入如下代码，会打开新的 `https://www.baidu.com`
+
+```js
+var page = window.open('https://www.baidu.com')
+```
+
+再次输入如下代码：
+
+```js
+page.document.body.innerHTML = ''
+```
+
+此时会报错：`Uncaught DOMException: Blocked a frame with origin "https://www.doubao.com" from accessing a cross-origin frame.`
+
+:::
+
 3. 禁止发送跨源 AJAX/fetch 请求（或仅允许“简单请求”，非简单请求需预检）；
 4. 禁止获取跨源资源的响应头（仅暴露少数默认头，如 Cache-Control）。
 
