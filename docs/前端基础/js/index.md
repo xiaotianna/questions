@@ -2100,6 +2100,51 @@ requestIdleCallback(workLoop, { timeout: 1000 })
 
 :::
 
+::: details web worker 优劣
+
+**好处**
+
+1. **避免主线程阻塞，提升页面响应性**
+   JavaScript 是单线程的，所有 DOM 操作、用户交互（如点击、滚动）都在主线程执行。如果有大量计算（比如大数据处理、复杂算法、数据可视化渲染），会导致页面卡顿、无响应。Web Worker 能把这些耗时计算放到独立的后台线程中，主线程可以专心处理用户交互和 DOM 操作，页面始终流畅。
+   示例场景：处理十万级数据的排序/过滤、图片像素处理、复杂的数学计算（如加密解密）。
+
+2. **充分利用多核 CPU 资源**
+   现代浏览器都是多核架构，但单线程的 JS 只能利用一个核心。Web Worker 可以创建多个子线程，让浏览器的多核 CPU 并行处理任务，大幅提升计算密集型任务的执行效率。
+
+3. **无侵入性，不影响现有代码架构**
+   Worker 线程和主线程是隔离的，通过消息传递（`postMessage`/`onmessage`）通信，不会污染主线程的变量、函数，也不会干扰现有代码的执行逻辑，易于集成到现有项目中。
+
+4. **支持离线运行（基本特性）**
+   Web Worker 不依赖网络（只要页面已加载），可以在离线应用（PWA）中正常工作，适合需要本地大量计算的离线场景。
+
+**坏处/限制**
+
+1. **无法访问 DOM 和 BOM 核心对象**
+   Worker 线程运行在独立的全局上下文（`WorkerGlobalScope`）中，**不能直接操作 DOM**（比如 `document`、`window`、`document.getElementById`），也不能访问 `alert`、`confirm` 等 BOM 方法。如果需要修改 DOM，必须通过消息把结果传回主线程，由主线程处理。
+
+2. **通信成本与数据拷贝开销**
+   主线程和 Worker 之间的通信通过 `postMessage` 实现，传递的数据会经过**结构化克隆算法**（而非引用传递）—— 这意味着如果传递大对象（如十万条数据的数组），会产生数据拷贝，带来额外的性能开销（少量数据无感知，大量数据会变慢）。
+   （注：部分浏览器支持 `Transferable Objects` 可以转移数据所有权，避免拷贝，但转移后原线程无法再访问该数据）。
+
+3. **有额外的资源消耗和管理成本**
+   每个 Worker 都是一个独立的线程，创建过多 Worker（比如几十上百个）会占用更多内存和 CPU 资源，反而降低性能。同时需要手动管理 Worker 的生命周期（创建、销毁、错误处理），比如页面关闭前要终止 Worker，否则可能导致内存泄漏。
+
+4. **兼容性与功能限制**
+
+   - 兼容性：虽然主流浏览器（Chrome/Firefox/Edge/Safari）都支持，但 IE 10 及以下完全不支持，如需兼容需做降级处理。
+   - 功能限制：Worker 中不能使用 `localStorage`/`sessionStorage`（可使用 `IndexedDB`），不能访问父页面的变量/函数，XMLHttpRequest 的 `withCredentials` 默认是 false 等。
+
+5. **调试难度略高**
+   Worker 线程的代码无法直接在主线程的开发者工具中调试，需要在浏览器 DevTools 的「Sources > Workers」面板单独调试，对新手来说稍复杂。
+
+**总结**
+
+1. **核心优势**：解决主线程阻塞问题，利用多核 CPU，提升页面流畅度，适合处理计算密集型任务。
+2. **主要限制**：无法操作 DOM，通信有拷贝开销，需手动管理生命周期，调试稍复杂。
+3. **适用场景**：大数据计算、复杂算法、离线数据处理等；不适用场景：频繁的小计算（通信开销大于收益）、需要频繁操作 DOM 的任务。
+
+:::
+
 > ⚠️ 注意：webworker 不能使用 DOM 操作。
 
 ```html
@@ -3151,9 +3196,55 @@ document.addEventListener(
 
 ### 深拷贝
 
+面试中深拷贝对象的 value，书写深拷贝函数需要考虑的是（只答）：
+
+- 内置对象（Array、Date、Set、Map、正则）、内置函数（内置构造函数）：包含私有属性，使用 `for...in/for...of` 遍历不出来
+
+> 例如：`Date` 时间，只能通过 `new` 的方式来生成，不能循环。通过 `instanceof` 判断类型，去生成拷贝内容（具体看下面的完整版代码）
+
+- 自定义对象：使用 `for...in/for...of` 循环
+
+#### 如何实现
+
 - `JSON.stringify()` 将 js 对象序列化，再通过`JSON.parse`反序列
-  - 如果对象中有函数、undefined、symbol 时，都会丢失
+
+  - 如果对象中有函数、undefined、symbol、构造函数时，都会丢失
   - 如果有正则表达式、Error 对象等，会得到空对象
+  - 对象嵌套处理不了
+
+  ```js
+  const obj = {
+    err: new Error('Something went wrong'), // {}
+    time: Date, // 丢失
+    time2: new Date(), // 2025-12-20T07:53:11.256Z
+    p: Person, // 丢失
+    p2: new Person('Jonas'), // {name: 'Jonas'}
+    arr: Array, // 丢失
+    arr2: new Array(), // []
+    func: function () {} // 丢失
+  }
+  ```
+
+- 结构化克隆：是浏览器 / Node.js 底层（如 `postMessage`、`IndexedDB`、`Web Workers` 通信）默认使用的拷贝方式
+
+::: details 对比 JSON 深拷贝
+
+| 特性                    | 结构化克隆     | JSON.parse(JSON.stringify())  |
+| ----------------------- | -------------- | ----------------------------- |
+| 深拷贝嵌套对象          | ✅ 支持        | ✅ 支持（无循环引用时）       |
+| 循环引用                | ✅ 支持        | ❌ 报错                       |
+| 特殊类型（Date/RegExp） | ✅ 保留类型    | ❌ Date 转字符串，RegExp 丢失 |
+| 函数/Symbol             | ❌ 不支持      | ❌ 丢失                       |
+| 性能                    | 高（底层优化） | 低（序列化/反序列化）         |
+
+:::
+
+```js
+const obj = structuredClone(originalObj)
+console.log(obj)
+console.log(originalObj === obj) // 输出 false，说明引用不同
+```
+
 - 手写深拷贝
 
 ```js
@@ -3195,6 +3286,100 @@ const deepCopiedObj = deepCopy(originalObj2)
 console.log(deepCopiedObj) // 输出深拷贝后的对象
 console.log(deepCopiedObj.b === originalObj2.b) // 输出 false，说明引用不同
 ```
+
+::: details 完整版
+
+一个健壮的深拷贝函数需要考虑以下几点：
+
+1. 处理基本数据类型（直接返回）
+2. 处理 Date 类型（创建新的 Date 实例）
+3. 处理 RegExp 类型（创建新的正则实例）
+4. 处理数组和普通对象（递归拷贝）
+5. 处理循环引用问题（使用 WeakMap 缓存已拷贝的对象）
+6. 过滤掉原型链上的属性（只拷贝自有属性）
+
+```js
+/**
+ * 深拷贝函数，支持处理 Date 日期对象、循环引用等场景
+ * @param {*} target - 需要拷贝的目标对象
+ * @param {WeakMap} [cache=new WeakMap()] - 缓存已拷贝的对象，解决循环引用问题
+ * @returns {*} - 拷贝后的新对象
+ */
+function deepClone(target, cache = new WeakMap()) {
+  // 1. 处理基本数据类型和 null/undefined
+  if (target === null || typeof target !== 'object') {
+    return target
+  }
+
+  // 2. 处理循环引用：如果缓存中已有该对象，直接返回缓存的拷贝结果
+  if (cache.has(target)) {
+    return cache.get(target)
+  }
+
+  let cloneTarget
+
+  // 3. 处理 Date 日期对象
+  if (target instanceof Date) {
+    cloneTarget = new Date(target)
+    cache.set(target, cloneTarget)
+    return cloneTarget
+  }
+
+  // 4. 处理正则表达式
+  if (target instanceof RegExp) {
+    cloneTarget = new RegExp(target.source, target.flags)
+    cache.set(target, cloneTarget)
+    return cloneTarget
+  }
+
+  // 5. 处理数组和普通对象
+  // 判断是数组还是对象，创建对应的空容器
+  cloneTarget = Array.isArray(target) ? [] : {}
+  // 将新对象存入缓存，解决循环引用
+  cache.set(target, cloneTarget)
+
+  // 6. 递归拷贝自有属性（不拷贝原型链上的属性）
+  for (const key in target) {
+    if (Object.prototype.hasOwnProperty.call(target, key)) {
+      cloneTarget[key] = deepClone(target[key], cache)
+    }
+  }
+
+  return cloneTarget
+}
+
+// 测试示例
+const originalObj = {
+  name: '测试',
+  age: 20,
+  birth: new Date('2000-01-01'),
+  hobbies: ['coding', 'reading'],
+  info: {
+    id: 1,
+    createTime: new Date()
+  }
+}
+
+// 添加循环引用测试
+originalObj.self = originalObj
+
+// 执行深拷贝
+const clonedObj = deepClone(originalObj)
+
+// 验证结果
+console.log(originalObj.birth === clonedObj.birth) // false，日期对象是新实例
+console.log(originalObj.info.createTime === clonedObj.info.createTime) // false
+console.log(originalObj.hobbies === clonedObj.hobbies) // false，数组是新数组
+console.log(clonedObj.self === clonedObj) // true，循环引用处理正常
+
+// 修改拷贝后的对象，验证不影响原对象
+clonedObj.birth.setFullYear(2025)
+clonedObj.info.id = 2
+console.log(originalObj.birth.getFullYear()) // 2000，原对象未被修改
+console.log(originalObj.info.id) // 1
+```
+
+:::
 
 ### 浅拷贝
 

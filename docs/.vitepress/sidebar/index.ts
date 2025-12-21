@@ -196,6 +196,10 @@ export const sidebar = {
         {
           text: 'electron兼容性处理',
           link: '/项目/个人项目/electron兼容性处理'
+        },
+        {
+          text: '版本号更新',
+          link: '/项目/个人项目/版本号更新'
         }
       ]
     },

@@ -37,4 +37,6 @@ features:
       link: /面经/
     - title: AI
       link: /ai/
+    - title: 逐字稿
+      link: /逐字稿/
 ---
