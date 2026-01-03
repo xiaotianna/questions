@@ -1135,3 +1135,307 @@ function parseIncompleteMarkdown(text: string): string {
 
 - 若去重后`**`总数仍为**奇数**（说明 AI 最新返回的文本仍缺`**`），则再次补全；
 - 若为**偶数**（说明 AI 已返回完整`**`，去重后已正确），则不补全。
+
+### AI 聊天因为网络等因素中断，如何恢复？
+
+AI 流式对话的特点：**大模型返回的是分段的文本流**（一个回答拆成几十个 token 片段，逐段推送），前端拼接成完整回答。普通 SSE 重连只需要恢复连接即可，但 AI 流式对话是**有上下文的连续回答**，重连后如果从头推送，用户体验极差，必须做到**重连后接着上次断开的位置继续返回剩余流式内容，完全无缝衔接**
+
+#### 实现思路
+
+> 采用的是 `fetch` + `ReadableStream（可读流）` 实现流式数据
+
+1. 前端：2 个核心缓存（页面内持久化）
+
+   - `currentReplyText`：**拼接缓存当前 AI 的流式回答文本**，每收到一个 SSE 片段，就追加到这个变量里，前端渲染时也渲染这个变量（用户看到完整的拼接内容）；
+   - `requestId`：**本次对话的唯一请求标识**（uuid），每发起一次新的 AI 提问，生成一个唯一 ID；重连时，这个 ID 不变，传给后端做「断点标识」。
+
+2. 后端：2 个核心缓存（内存缓存，生产可改用 Redis）
+   - `aiReplyCache`：缓存**每个 requestId 对应的完整 AI 回答文本**，大模型生成完完整回答后，立刻存入这个缓存，key=requestId，value=完整回答文本；
+   - `aiProgressCache`：缓存**每个 requestId 的推送进度**，key=requestId，value=已向前端推送的字符长度（比如：完整回答 100 字，已推送 30 字，进度就是 30）。
+
+##### ✅ 【首次提问-正常流式推送】
+
+1. 前端发起新提问 → 生成唯一`requestId`，POST 请求后端 AI 接口，携带「提问内容+requestId」；
+2. 后端收到请求 → 调用大模型生成**完整回答文本**，存入`aiReplyCache`；
+3. 后端把完整回答拆分成流式片段，**逐段向前端推送**，每推送一段，更新`aiProgressCache`的进度值（记录已推送长度）；
+4. 前端收到片段 → 追加到`currentReplyText`，实时渲染拼接后的文本，用户看到 AI 逐字回答。
+
+##### ✅ 【网络中断-触发重连】
+
+1. 网络断开 → 心跳超时触发重连，前端的`currentReplyText`（已拼接的内容）和`requestId`（本次对话 ID）**完全保留**；
+2. 前端发起重连请求 → 依然 POST 请求同一个 AI 接口，携带「提问内容+requestId+无需传新问题」；
+
+##### ✅ 【重连成功-无缝续传】
+
+1. 后端收到重连请求 → 通过`requestId`从缓存中读取：① 完整回答文本 ② 已推送的进度值；
+2. 后端计算：**剩余推送内容 = 完整回答文本.slice(已推送进度)**；
+3. 后端把「剩余内容」继续拆分成流式片段，**从断点处开始逐段推送**，并持续更新进度；
+4. 前端收到剩余片段 → 直接追加到`currentReplyText`末尾，页面无缝续上回答，用户无感知！
+
+> 也可以用每个片段带上 id，后续根据 id 去恢复断点位置
+
+::: details 示例代码
+
+##### 后端
+
+1. 安装依赖
+
+```bash
+npm i express cors uuid
+```
+
+2. `server.js`
+
+核心逻辑就是在每次生成的内容片段中，去更新当前的进度
+
+```js
+const express = require('express')
+const cors = require('cors')
+const { v4: uuidv4 } = require('uuid')
+const app = express()
+app.use(cors())
+app.use(express.json())
+
+// ===================== 核心缓存区 (生产环境替换为 Redis) =====================
+const aiReplyCache = new Map() // key: requestId, value: AI完整回答文本
+const aiProgressCache = new Map() // key: requestId, value: 已推送的字符长度
+const HEARTBEAT_INTERVAL = 10000 // 心跳间隔10秒
+// 定时清理过期缓存，防止内存泄漏（每5分钟清理一次3分钟前的缓存）
+setInterval(() => {
+  const now = Date.now()
+  for (const [key, val] of aiReplyCache) {
+    if (now - val.createTime > 180000) {
+      aiReplyCache.delete(key)
+      aiProgressCache.delete(key)
+    }
+  }
+}, 300000)
+// =========================================================================
+
+app.post('/api/ai-sse', async (req, res) => {
+  const { question, requestId } = req.body
+  res.setHeader('Content-Type', 'text/event-stream')
+  res.setHeader('Cache-Control', 'no-cache')
+  res.setHeader('Connection', 'keep-alive')
+  res.flushHeaders()
+
+  const currentRequestId = requestId || uuidv4()
+  let fullAnswer = ''
+  let pushProgress = 0 // 已推送的字符长度
+
+  // 判断是首次请求还是重连续传请求
+  if (aiReplyCache.has(currentRequestId)) {
+    // 重连续传：从缓存读取完整回答+已推送进度
+    fullAnswer = aiReplyCache.get(currentRequestId).content
+    pushProgress = aiProgressCache.get(currentRequestId) || 0
+    console.log(
+      `【重连续传】requestId:${currentRequestId}，已推送${pushProgress}字，剩余${
+        fullAnswer.length - pushProgress
+      }字`
+    )
+  } else {
+    // 首次请求：调用大模型生成完整回答，存入缓存
+    fullAnswer = await openai.chat.completions.create({...})
+    // 这里只是模拟，如果是流式的话，在每个chunk中都需要更新缓存
+    // 这里是用的生成全部结果，模拟分chunk形式
+    aiReplyCache.set(currentRequestId, {
+      content: fullAnswer,
+      createTime: Date.now()
+    })
+    aiProgressCache.set(currentRequestId, 0)
+    console.log(
+      `【首次请求】requestId:${currentRequestId}，生成完整回答共${fullAnswer.length}字`
+    )
+  }
+
+  // 心跳包定时器：检测连接存活
+  const heartBeatTimer = setInterval(() => {
+    res.write(`data: ${JSON.stringify({ type: 'ping' })}\n\n`)
+  }, HEARTBEAT_INTERVAL)
+
+  // 流式推送（首次推全部，重连推剩余）+ 更新进度
+  const pushChunk = () => {
+    // 每次推送1~3个字符，模拟AI流式打字机效果，生产可调整推送粒度
+    const chunkSize = Math.floor(Math.random() * 3) + 1
+    if (pushProgress < fullAnswer.length) {
+      const end = Math.min(pushProgress + chunkSize, fullAnswer.length)
+      const chunkText = fullAnswer.slice(pushProgress, end)
+      // 推送流式片段：type=answer 标识是AI回答内容
+      res.write(
+        `data: ${JSON.stringify({
+          type: 'answer',
+          text: chunkText,
+          requestId: currentRequestId
+        })}\n\n`
+      )
+      // 更新推送进度并缓存
+      pushProgress = end
+      aiProgressCache.set(currentRequestId, pushProgress)
+      // 递归推送下一段，模拟流式效果
+      setTimeout(pushChunk, 100)
+    } else {
+      // 推送完成：type=finish 标识回答结束，前端做收尾处理
+      res.write(
+        `data: ${JSON.stringify({
+          type: 'finish',
+          requestId: currentRequestId
+        })}\n\n`
+      )
+      clearInterval(heartBeatTimer)
+      res.end()
+    }
+  }
+  pushChunk()
+
+  // 监听连接断开：清理定时器+缓存
+  req.on('close', () => {
+    clearInterval(heartBeatTimer)
+    console.log(
+      `【连接断开】requestId:${currentRequestId}，最后推送进度：${pushProgress}字`
+    )
+    res.end()
+  })
+})
+
+const PORT = 3000
+app.listen(PORT)
+```
+
+##### 前端
+
+```js
+// ===================== 全局状态变量 (核心：缓存+重连控制) =====================
+let sseController = null
+let reconnectTimer = null
+let isReconnecting = false
+let lastHeartbeatTime = Date.now()
+const HEARTBEAT_TIMEOUT = 15000 // 心跳超时15秒，大于后端10秒
+const MAX_RECONNECT_DELAY = 30000 // 最大重连间隔30秒
+// AI对话核心缓存 (重连关键)
+let currentReplyText = '' // 缓存拼接后的完整AI回答
+let currentRequestId = '' // 缓存本次对话的唯一ID
+let isAnswering = false // 是否正在回答中
+
+// 心跳检测定时器：超时则主动断开+重连
+setInterval(() => {
+  if (sseController && Date.now() - lastHeartbeatTime > HEARTBEAT_TIMEOUT) {
+    log(`⚠️ 心跳超时，连接静默断开，准备重连续传回答`, 'reconnect')
+    abortSSE()
+    startSSE() // 重连时自动续传
+  }
+}, 1000)
+
+function startSSE(delay = 0) {
+  if (isReconnecting || !isAnswering) return
+  if (reconnectTimer) clearTimeout(reconnectTimer)
+
+  reconnectTimer = setTimeout(async () => {
+    isReconnecting = true
+    sseController = new AbortController()
+    const signal = sseController.signal
+
+    try {
+      // 携带问题+requestId，重连时requestId不变
+      const response = await fetch('http://localhost:3000/api/ai-sse', {
+        method: 'POST',
+        signal,
+        keepalive: true,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: question,
+          requestId: currentRequestId
+        })
+      })
+
+      if (!response.ok) throw new Error(`服务端错误: ${response.status}`)
+      if (!response.body) throw new Error('无数据流返回')
+
+      isReconnecting = false
+      lastHeartbeatTime = Date.now()
+
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder('utf-8')
+      let buffer = ''
+
+      while (!signal.aborted) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true })
+        const messages = buffer.split('\n\n')
+        buffer = messages.pop()
+        messages.forEach(parseSSEMessage)
+      }
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        console.log(`连接异常: ${error.message}`)
+      }
+    } finally {
+      if (!signal.aborted && isAnswering) {
+        const nextDelay = Math.min(delay * 2 || 1000, MAX_RECONNECT_DELAY)
+        console.log(`准备重连，下次延迟：${nextDelay / 1000}秒`)
+        startSSE(nextDelay)
+      }
+      sseController = null
+      isReconnecting = false
+    }
+  }, delay)
+}
+
+// 解析sse消息
+function parseSSEMessage(msg) {
+  if (!msg || !msg.startsWith('data:')) return
+  const data = msg.slice(5).trim()
+  if (!data) return
+
+  try {
+    const json = JSON.parse(data)
+    switch (json.type) {
+      case 'ping':
+        lastHeartbeatTime = Date.now()
+        log(`📶 心跳检测，连接正常`, 'ping')
+        break
+      case 'answer':
+        currentReplyText += json.text
+        document.getElementById('aiReply').innerText = currentReplyText
+        if (json.requestId) currentRequestId = json.requestId
+        break
+      case 'finish':
+        log('✅ AI回答完成，结束流式推送', 'success')
+        isAnswering = false
+        abortSSE()
+        document.getElementById('sendBtn').disabled = false
+        break
+    }
+  } catch (e) {
+    log(`📥 原始消息: ${data}`, 'error')
+  }
+}
+
+// 发送按钮回调
+function sendQuestion() {
+  if (!question) return alert('请输入问题')
+  // 初始化状态
+  currentReplyText = ''
+  currentRequestId = ''
+  isAnswering = true
+  // 发起首次请求
+  startSSE()
+}
+
+// 主动终止连接（复用之前的逻辑）
+function abortSSE() {
+  if (sseController) {
+    sseController.abort()
+    sseController = null
+  }
+  if (reconnectTimer) {
+    clearTimeout(reconnectTimer)
+    reconnectTimer = null
+  }
+  isReconnecting = false
+}
+
+window.addEventListener('unload', abortSSE)
+```
+
+:::
