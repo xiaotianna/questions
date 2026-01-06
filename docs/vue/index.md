@@ -71,7 +71,10 @@
       <!-- 仅含 class 绑定 -->
       <div :class="{ active }"></div>
       <!-- 仅含 id 和 value 绑定 -->
-      <input :id="id" :value="value">
+      <input
+        :id="id"
+        :value="value"
+      />
       <!-- 仅含文本子节点 -->
       <div>{{ dynamic }}</div>
       ```
@@ -79,9 +82,14 @@
       在为这些元素生成渲染函数时，Vue 在 vnode 创建调用中直接编码了每个元素所需的更新类型：
 
       ```js
-      createElementVNode("div", {
-        class: _normalizeClass({ active: _ctx.active })
-      }, null, 2 /* CLASS */)
+      createElementVNode(
+        'div',
+        {
+          class: _normalizeClass({ active: _ctx.active })
+        },
+        null,
+        2 /* CLASS */
+      )
       ```
 
       最后这个参数 `2` 就是一个**更新类型标记 (patch flag)**。一个元素可以有多个更新类型标记，会被合并成一个数字。运行时渲染器也将会使用**位运算**来检查这些标记，确定相应的更新操作：
@@ -437,3 +445,60 @@ Vue.delete(arr, 1) // 删除元素2
 - 分析组件的功能需求：例如，一个按钮组件，需要实现点击、禁用、加载中、成功、失败等状态。
 - 组件的结构和样式
 - 实现组件的逻辑和数据处理
+
+## 问题 21：vue3 的 setup 可以获取到当前组件的 this 吗？
+
+**vue3 setup 中没有 this**。
+
+但是在选项式 api 中虽然可以拿到 this，但是 setup 执行时机：beforeCreate 之前，此时组件实例未初始化，这是拿不到 this 的底层原因
+
+> vue2 中，beforeCreate 阶段组件实例还未初始化，this 是 undefined；created 阶段组件实例初始化完成，才能拿到 this
+
+## 问题 22：vue3 中如何获取到组件的 dom？
+
+- 通过 `ref` 来获取
+- 在 vue3.5 可以通过 `useTemplateRef` 来获取
+
+```vue
+<script>
+const inputRef = useTemplateRef('input')
+</script>
+
+<template>
+  <input ref="input" />
+</template>
+```
+
+## 问题 23：vue3 的 ref 可以不放在 setup 中单独使用吗?
+
+- 总：Vue 的 `ref()` API 完全可以脱离 `setup` 单独使用，在 Vue3 中它本身就是一个独立的响应式 API，和 setup 语法糖 / 钩子没有强制绑定关系。
+
+- 分：ref 的本质是什么？
+
+  `ref()` 是 Vue3 组合式 API 中**最基础的独立响应式函数**，它的核心作用是：**为「基本数据类型（字符串、数字、布尔值等）」创建响应式包装对象**。
+
+  因为 Vue3 的响应式是基于 `Proxy` 实现的，`Proxy` 只能劫持**引用类型（对象/数组）**，无法劫持基本数据类型，`ref()` 就是为了解决这个问题而生的，它和 `setup` 没有任何「强依赖」关系。
+
+## 问题 24：vue3 组件是通过 import 导入的，每次导入是复用组件还是重新创建组件实例？
+
+- 总：Vue3 中通过 `import` 导入的**组件本身（组件对象）是全局唯一、被复用的**；但**每次在模板/代码中使用这个组件标签，都会创建一个「全新的独立组件实例」**，实例之间**互不影响、完全隔离**。
+
+- 分：
+
+  1. import 导入的：是「组件的**构造器/配置对象**」，**全局只会加载一次、复用到底**
+
+     当你写 `import MyComponent from './MyComponent.vue'` 时，`import` 做的事情是：
+
+     - 从指定路径加载这个 `.vue` 单文件组件的「编译后的组件配置对象」（包含 setup、props、生命周期、模板等所有信息）；
+     - ES Module 的模块机制是「**单例模式**」：**同一个组件文件，无论在项目中 import 多少次，最终都只会被加载、解析一次**，内存中永远只有一份这个组件的「配置对象」；
+     - 后续所有地方再写这个 import 语句，拿到的都是「同一份内存地址的组件配置对象」，不会重复加载，这是 Vue 的性能优化核心之一。
+
+  2. 组件渲染/使用的：是「基于配置对象 new 出来的**组件实例**」，每次使用都新建
+
+     当你在模板中写 `<MyComponent />` 时，Vue 做的事情是：
+
+     - 基于之前 `import` 拿到的「唯一组件配置对象」，**执行一次实例化逻辑，创建一个全新的组件实例**；
+     - 哪怕你在同一个父组件中写 `<MyComponent />` 10 次，Vue 就会**new 10 次**，得到**10 个完全独立的组件实例**；
+     - 这 10 个实例共享「一份组件配置」，但各自拥有**独立的响应式数据、独立的生命周期、独立的 DOM、独立的 props/emit 上下文**。
+
+> 该题是 metaapp 二面的问题，感觉面试官考察的是 js 的 esm 模块的 import 导入的问题
