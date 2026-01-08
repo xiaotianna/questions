@@ -509,3 +509,91 @@ startTransition(() => {
 ```
 
 > ⚠️ 注意：传递给 `startTransition` 的函数必须是同步的，React 会立即执行此函数
+
+## 问题 20：在 useState 的 setState 操作中，如果函数的返回值是浅拷贝或深拷贝，对渲染有什么影响？
+
+### 现象 1
+
+```tsx
+import React from 'react'
+import { cloneDeep } from 'lodash-es'
+
+const Component = () => {
+  const [state, setState] = React.useState([
+    { id: 1, name: 'name1' },
+    { id: 2, name: 'name2' }
+  ])
+
+  const handleClick = () => {
+    setState((prevState) => [...prevState])
+  }
+  const handleClick2 = () => {
+    setState((prevState) => cloneDeep(prevState))
+  }
+
+  return (
+    <div>
+      <button onClick={handleClick}>浅拷贝</button>
+      <button onClick={handleClick2}>深拷贝</button>
+      {state.map((item) => (
+        <div key={item.id}>{item.name}</div>
+      ))}
+      <hr />
+      {state.map((item) => (
+        <ListItem key={item.id} />
+      ))}
+    </div>
+  )
+}
+
+const ListItem = () => {
+  return (
+    <div>
+      <div>name</div>
+    </div>
+  )
+}
+
+export default Component
+```
+
+当我们点击按钮，渲染的是 dom，无论是深拷贝还是浅拷贝，key 值不变，所以不会重新渲染；
+
+但是如果渲染的是组件，那么浅拷贝和深拷贝都会重新渲染组件。
+
+> ⚠️ 注意：React 的 key 属性是用来优化列表渲染的，它的作用是帮助 React 识别哪些元素是新增、删除或移动的，而不是用来阻止组件重新渲染的。
+
+React 的状态更新机制是基于引用对比的：当你调用 `setState` 时，无论返回的是浅拷贝（`[...prevState]`）还是深拷贝（`cloneDeep(prevState)`），都会生成一个新的数组引用。
+
+🤔 **那为什么 dom 元素不会重新渲染，而子组件会呢？**
+
+- **原生 DOM 元素**：
+  点击按钮后，父组件重渲染，但浏览器并没有重新创建 / 销毁这些 div 元素，因为 React 通过 key 识别出这是同一个元素，只是检查其内容是否变化（`item.name` 没变），所以只做虚拟 DOM 的对比，不会触发真实 DOM 的重新渲染（这是你感知不到 DOM 重新渲染的原因）。
+- **自定义子组件 ListItem**：
+  点击按钮后，ListItem 一定会重新渲染。原因是：父组件重渲染时，会重新生成`<ListItem key={item.id} />`这个 JSX 元素。**React 默认情况下，只要父组件重渲染，所有子组件都会跟着重渲染**（除非子组件做了性能优化），**key 只是保证 React 不会销毁重建子组件实例（避免丢失状态），但无法阻止子组件的重渲染逻辑执行**
+
+### 现象 2
+
+此时我们需要给 `ListItem` 添加 `React.memo` 优化性能：
+
+```tsx
+const ListItem = React.memo(
+  ({ item }: { item: { id: number; name: string } }) => {
+    return (
+      <div>
+        <div>
+          {item.name}-{item.id}
+        </div>
+      </div>
+    )
+  }
+)
+```
+
+这样的话，子组件浅拷贝就不会重新渲染，而深拷贝一样会重新渲染。
+
+为什么呢？
+
+因为 React.memo 的本质是一个高阶组件（HOC），它的作用是：缓存组件的渲染结果，只有当组件的 props 发生「可检测的变化」时，才重新渲染组件。
+
+但关键在于：**React.memo默认使用的是浅对比**，而非「深对比」。
