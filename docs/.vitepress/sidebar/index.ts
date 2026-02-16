@@ -264,7 +264,8 @@ export const sidebar = {
       items: [
         { text: '自我介绍', link: '/场景题/其他/自我介绍' },
         { text: '如何聊项目', link: '/场景题/其他/如何聊项目' },
-        { text: '反问', link: '/场景题/其他/反问' }
+        { text: '反问', link: '/场景题/其他/反问' },
+        { text: 'hr面', link: '/场景题/其他/hr面' },
       ]
     }
   ],
