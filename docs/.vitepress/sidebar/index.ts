@@ -140,6 +140,10 @@ export const sidebar = {
         {
           text: 'AI Coding分享',
           link: '/项目/实习项目/孩子王/AI Coding分享'
+        },
+        {
+          text: '日历组件优化',
+          link: '/项目/实习项目/孩子王/日历组件优化'
         }
       ]
     },
