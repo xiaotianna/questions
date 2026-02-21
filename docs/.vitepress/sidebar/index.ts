@@ -354,5 +354,23 @@ export const sidebar = {
       text: 'AI相关面试题',
       link: '/ai/面试题'
     }
+  ],
+  '/逐字稿/': [
+    {
+      text: '大纲',
+      link: '/逐字稿/'
+    },
+    {
+      text: '孩子王',
+      items: [
+        { text: '语翼数字人 h5', link: '/逐字稿/孩子王/语翼数字人h5' },
+        { text: '语翼数字人后台', link: '/逐字稿/孩子王/语翼数字人后台' },
+        { text: 'AI提效', link: '/逐字稿/孩子王/AI提效' }
+      ]
+    },
+    {
+      text: 'AI Chat',
+      link: '/逐字稿/AI-Chat'
+    }
   ]
 }
