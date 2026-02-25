@@ -14,7 +14,11 @@ Protocol）工具、对话历史管理，并采用容器化部署，从「问答
 
 渲染上，如果每来一块就 setState 一次，在 React 里会触发大量重绘、容易卡顿。所以做了
 **requestAnimationFrame**
-流式缓冲：同一帧内到的多个 chunk 先攒着，下一帧再一次性更新 UI。**对比**：不缓冲时容易出现输入卡顿、滚动抖动；用 requestAnimationFrame 后渲染节奏和浏览器帧率对齐，打字机效果更顺滑、DOM 操作次数也明显减少。
+流式缓冲：同一帧内到的多个 chunk 先攒着，下一帧再一次性更新 UI。
+
+**对比**：不缓冲时容易出现输入卡顿、滚动抖动；用 requestAnimationFrame 后渲染节奏和浏览器帧率对齐，打字机效果更顺滑、DOM 操作次数也明显减少。
+
+---
 
 请求的整条生命周期用 **有限状态机（FSM）**
 管：5 种状态（idle/loading/success/error/canceled）和 5 种事件（START/FINISH/ERROR/CANCEL/RESET），纯函数式状态转换 + 状态转换表，**避免非法跳转**。
@@ -28,7 +32,9 @@ Protocol）工具、对话历史管理，并采用容器化部署，从「问答
 
 解决思路是抽象一个
 **StreamBuffer**：在内存里做缓冲与批量处理，并在流结束或超时等时机增加
-**forceRefresh**，强制把缓冲区里剩余内容推到渲染。**对比**：不做的活最后一批 chunk 可能永远等不到「下一帧」触发，消息会一直停在 loading 或少一段字；用 StreamBuffer +
+**forceRefresh**，强制把缓冲区里剩余内容推到渲染。
+
+**对比**：不做的活最后一批 chunk 可能永远等不到「下一帧」触发，消息会一直停在 loading 或少一段字；用 StreamBuffer +
 forceRefresh 后，流结束或超时时必定把缓冲区清空到 UI，数据完整、不会卡在 loading。
 
 ## 插件化流式数据解析引擎
