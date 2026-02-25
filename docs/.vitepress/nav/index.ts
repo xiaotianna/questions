@@ -10,7 +10,7 @@ export const nav = [
   { text: '性能优化', link: '/性能优化/', activeMatch: '/性能优化/' },
   {
     text: '项目',
-    link: '/项目/实习项目/移动端上拉加载、下拉刷新实现方案',
+    link: '/项目/实习项目/微前端',
     activeMatch: '/项目/'
   },
   { text: '场景题', link: '/场景题/', activeMatch: '/场景题/' },

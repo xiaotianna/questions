@@ -87,10 +87,6 @@ export const sidebar = {
     {
       text: '实习项目',
       items: [
-        {
-          text: '移动端上拉加载、下拉刷新实现方案',
-          link: '/项目/实习项目/移动端上拉加载、下拉刷新实现方案'
-        },
         { text: '微前端', link: '/项目/实习项目/微前端' },
         {
           text: 'requestAnimationFrame封装定时器',
@@ -155,10 +151,6 @@ export const sidebar = {
           link: '/项目/个人项目/低代码项目性能优化'
         },
         {
-          text: '开发约定式路由插件',
-          link: '/项目/个人项目/开发约定式路由插件'
-        },
-        {
           text: '渲染区样式隔离、相对区域响应式协议',
           link: '/项目/个人项目/渲染区样式隔离、相对区域响应式'
         },
@@ -177,29 +169,20 @@ export const sidebar = {
         {
           text: '双token',
           link: '/项目/个人项目/双token'
-        }
+        },
+        { text: '大文件上传', link: '/项目/个人项目/大文件上传' },
       ]
     },
     {
       text: '个人项目🍧 im项目',
       items: [
-        { text: '第三方包补丁', link: '/项目/个人项目/第三方包补丁' },
-        {
-          text: 'im项目本地数据库方案',
-          link: '/项目/个人项目/im项目本地数据库方案'
-        },
         {
           text: 'im项目为什么选择socket.io',
           link: '/项目/个人项目/im项目为什么选择socket.io'
         },
-        { text: '大文件上传', link: '/项目/个人项目/大文件上传' },
         {
           text: '扫码登录',
           link: '/项目/个人项目/扫码登录'
-        },
-        {
-          text: 'electron兼容性处理',
-          link: '/项目/个人项目/electron兼容性处理'
         },
         {
           text: '版本号更新',
@@ -365,7 +348,8 @@ export const sidebar = {
       items: [
         { text: '语翼数字人 h5', link: '/逐字稿/孩子王/语翼数字人h5' },
         { text: '语翼数字人后台', link: '/逐字稿/孩子王/语翼数字人后台' },
-        { text: 'AI提效', link: '/逐字稿/孩子王/AI提效' }
+        { text: 'AI提效', link: '/逐字稿/孩子王/AI提效' },
+        { text: 'AICoding分享', link: '/逐字稿/孩子王/AICoding分享' },
       ]
     },
     {
