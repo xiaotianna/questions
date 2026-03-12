@@ -10,7 +10,8 @@ Protocol）工具、对话历史管理，并采用容器化部署，从「问答
 由于原生的sse有非常多的限制，例如：
 
 1. sse数据格式非常严格，必须是字符串，而fetch可以自定义，可以是文本、二进制、JSON
-2. fetch可以通过`signal：abortController`，可手动控制流的暂停、恢复、取消
+2. 而且原生sse只支持get请求，不支持post
+3. fetch可以通过`signal：abortController`，可手动控制流的暂停、恢复、取消
 
 渲染上，如果每来一块就 setState 一次，在 React 里会触发大量重绘、容易卡顿。所以做了
 **requestAnimationFrame**
@@ -26,7 +27,7 @@ Protocol）工具、对话历史管理，并采用容器化部署，从「问答
 **对比**：不用状态机时，loading
 / 成功 / 失败 / 已取消 等多用布尔或散落的 if/else 维护，容易漏掉「取消后又报错」「卸载时未清理」等组合，状态难推理、和 UI 的对应关系也乱。用 FSM 后，所有合法路径都在转换表里显式定义，取消、错误恢复、卸载清理都在同一套模型里处理，状态可预测、加新场景（例如重试）只需加事件和转换，不改现有分支。
 
-## 流式数据完整性：StreamBuffer 与 forceRefresh
+## 流式数据完整性：StreamBuffer（可以类，做chunk缓存的） 与 forceRefresh
 
 在接入 requestAnimationFrame 做批量渲染后，发现**最后一段数据有时不会出现在界面上**，消息会一直停在 loading。原因是 rAF 的调度时机不确定，最后一批 chunk 可能没来得及在「下一帧」里被消费和渲染。
 
